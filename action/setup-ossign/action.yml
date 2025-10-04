@@ -15,23 +15,30 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install config
-      if: ${{ github.os == 'linux' }}
+    - name: Test
       shell: bash
       run: |
-        echo "Runner OS: ${{ github.os }}, Arch: ${{ github.runner.arch }}"
+        echo "Runner OS: ${{ runner.os }}, Arch: ${{ runner.arch }}"
+        echo "Runner OS2: ${{ github.runner.os }}, Arch2: ${{ github.runner.arch }}"
+        echo "Runner OSe: ${{ github.os }}, Arch2: ${{ github.arch }}"
+      
+    - name: Install config
+      if: ${{ runner.os == 'linux' }}
+      shell: bash
+      run: |
+        echo "Runner OS: ${{ runner.os }}, Arch: ${{ github.runner.arch }}"
         mkdir /etc/ossign
         echo '${{ inputs.ossign_config }}' >> /etc/ossign/config.yaml
     
     - name: Install config
-      if: ${{ github.os == 'windows' }}
+      if: ${{ runner.os == 'windows' }}
       shell: pwsh
       run: |
         Create-Item -Path "$env:ProgramData\ossign" -ItemType Directory -Force
         '${{ inputs.ossign_config }}' | Out-File -FilePath "$env:ProgramData\ossign\config.yaml" -Encoding utf8
     
     - name: Install ossign (linux/amd64,linux/arm64)
-      if: ${{ github.os == 'linux' }}
+      if: ${{ runner.os == 'linux' }}
       shell: bash
       run: |
         sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
@@ -41,7 +48,7 @@ runs:
         ossign --help
     
     - name: Install ossign
-      if: ${{ github.os == 'windows' && github.runner.arch != 'ARM64' }}
+      if: ${{ runner.os == 'windows' && runner.arch != 'ARM64' }}
       shell: pwsh
       run: |
         Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
