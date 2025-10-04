@@ -9,7 +9,7 @@ builds:
       - darwin
     goarch:
       - amd64
-      - arm64
+      # - arm64
 
   - id: winbuild
     main: ./cmd/
@@ -126,8 +126,9 @@ uploads:
       - deb
     mode: archive
     username: "ossign-dev"
-    target: https://git.cloudyne.io/api/packages/ossign/debian/pool/all/main/upload
+    target: https://pkg.ossign.org/debian/pool/all/main/upload
     custom_artifact_name: true
+    
   
   - name: "apkpkg"
     method: "PUT"
@@ -135,7 +136,7 @@ uploads:
       - apk
     mode: archive
     username: "ossign-dev"
-    target: https://git.cloudyne.io/api/packages/ossign/alpine/all/repository
+    target: https://pkg.ossign.org/alpine/all/repository
     custom_artifact_name: true
   
   - name: "rpmpkg"
@@ -144,5 +145,5 @@ uploads:
       - rpm
     mode: archive
     username: "ossign-dev"
-    target: https://git.cloudyne.io/api/packages/ossign/rpm/upload
+    target: https://pkg.ossign.org/rpm/upload
     custom_artifact_name: true
