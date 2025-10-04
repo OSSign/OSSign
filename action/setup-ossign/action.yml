@@ -21,7 +21,8 @@ runs:
       run: |
         echo "Runner OS: ${{ runner.os }}, Arch: ${{ runner.arch }}"
         sudo mkdir /etc/ossign
-        sudo sh -c 'echo \'${{ inputs.ossign_config }}\' >> /etc/ossign/config.yaml'
+        echo '${{ inputs.ossign_config }}' > /tmp/ossign-config.yml
+        sudo mv /tmp/ossign-config.yml /etc/ossign/config.yaml
     
     - name: Install config
       if: ${{ runner.os == 'windows' }}
