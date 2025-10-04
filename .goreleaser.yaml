@@ -80,44 +80,44 @@ release:
     owner: ossign
     name: ossign
 
-dockers:
-  - id: ossign-linux-amd64
-    use: docker
-    goos: linux
-    goarch: amd64
-    dockerfile: Dockerfile
-    image_templates:
-    - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
-    - ossign/ossign:{{ .Tag }}-linux-amd64
-  - id: ossign-linux-arm64
-    use: docker
-    goos: linux
-    goarch: arm64
-    dockerfile: Dockerfile
-    image_templates:
-    - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
-    - ossign/ossign:{{ .Tag }}-linux-arm64
+# dockers:
+#   - id: ossign-linux-amd64
+#     use: docker
+#     goos: linux
+#     goarch: amd64
+#     dockerfile: Dockerfile
+#     image_templates:
+#     - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
+#     - ossign/ossign:{{ .Tag }}-linux-amd64
+#   - id: ossign-linux-arm64
+#     use: docker
+#     goos: linux
+#     goarch: arm64
+#     dockerfile: Dockerfile
+#     image_templates:
+#     - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
+#     - ossign/ossign:{{ .Tag }}-linux-arm64
 
-docker_manifests:
-  - name_template: ghcr.io/ossign/ossign:latest
-    image_templates:
-      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
-      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
+# docker_manifests:
+#   - name_template: ghcr.io/ossign/ossign:latest
+#     image_templates:
+#       - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
+#       - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
   
-  - name_template: ghcr.io/ossign/ossign:{{ .Tag }}
-    image_templates:
-      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
-      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
+#   - name_template: ghcr.io/ossign/ossign:{{ .Tag }}
+#     image_templates:
+#       - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
+#       - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
   
-  - name_template: ossign/ossign:latest
-    image_templates:
-      - ossign/ossign:{{ .Tag }}-linux-amd64
-      - ossign/ossign:{{ .Tag }}-linux-arm64
+#   - name_template: ossign/ossign:latest
+#     image_templates:
+#       - ossign/ossign:{{ .Tag }}-linux-amd64
+#       - ossign/ossign:{{ .Tag }}-linux-arm64
   
-  - name_template: ossign/ossign:{{ .Tag }}
-    image_templates:
-      - ossign/ossign:{{ .Tag }}-linux-amd64
-      - ossign/ossign:{{ .Tag }}-linux-arm64
+#   - name_template: ossign/ossign:{{ .Tag }}
+#     image_templates:
+#       - ossign/ossign:{{ .Tag }}-linux-amd64
+#       - ossign/ossign:{{ .Tag }}-linux-arm64
 
 uploads:
   - name: "debpkg"
