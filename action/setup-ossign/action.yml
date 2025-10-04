@@ -15,20 +15,13 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Test
-      shell: bash
-      run: |
-        echo "Runner OS: ${{ runner.os }}, Arch: ${{ runner.arch }}"
-        echo "Runner OS2: ${{ github.runner.os }}, Arch2: ${{ github.runner.arch }}"
-        echo "Runner OSe: ${{ github.os }}, Arch2: ${{ github.arch }}"
-      
     - name: Install config
       if: ${{ runner.os == 'linux' }}
       shell: bash
       run: |
-        echo "Runner OS: ${{ runner.os }}, Arch: ${{ github.runner.arch }}"
-        mkdir /etc/ossign
-        echo '${{ inputs.ossign_config }}' >> /etc/ossign/config.yaml
+        echo "Runner OS: ${{ runner.os }}, Arch: ${{ runner.arch }}"
+        sudo mkdir /etc/ossign
+        sudo echo '${{ inputs.ossign_config }}' >> /etc/ossign/config.yaml
     
     - name: Install config
       if: ${{ runner.os == 'windows' }}
