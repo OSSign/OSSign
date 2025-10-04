@@ -27,7 +27,7 @@ runs:
       run: |
         '${{ inputs.ossign_config }}' | Out-File -FilePath "$env:ProgramData\ossign\config.yaml" -Encoding utf8
     
-    - name: Install ossign
+    - name: Install ossign (linux/amd64,linux/arm64)
       if: ${{ github.runner.os == 'linux' }}
       shell: bash
       run: |
@@ -35,10 +35,24 @@ runs:
         echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
         sudo apt-get update
         sudo apt-get install -y ossign
+        ossign --help
     
     - name: Install ossign
-      if: ${{ github.runner.os == 'windows' }}
+      if: ${{ github.runner.os == 'windows' && github.runner.arch != 'ARM64' }}
       shell: pwsh
       run: |
-        
-    
+        Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
+        $env:Path += ";$env:ProgramFiles\ossign"
+        [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
+        $env:GITHUB_PATH = "$env:ProgramFiles\ossign;$env:GITHUB_PATH"
+        ossign.exe --help
+
+
+
+# URLS
+# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Darwin_x86_64
+# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Darwin_arm64
+# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Linux_x86_64
+# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Linux_arm64
+# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_x86_64
+# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_arm64
