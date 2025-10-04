@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ossign/ossigner/pkg/binpatch"
+	"github.com/ossign/ossign/pkg/binpatch"
 	"github.com/sassoftware/relic/v8/lib/vfs"
 )
 

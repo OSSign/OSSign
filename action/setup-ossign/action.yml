@@ -1,0 +1,44 @@
+name: Setup OSSign
+description: Sign binaries using the ossign tool
+author: OSSign
+
+branding:
+  icon: feather
+  color: green
+
+inputs:
+  ossign_config:
+    description: 'The configuration for ossign (JSON)'
+    required: true
+    default: '{}' 
+
+runs:
+  using: composite
+  steps:
+    - name: Install config
+      if: ${{ github.os == 'linux' }}
+      shell: bash
+      run: |
+        echo '${{ inputs.ossign_config }}' >> /etc/ossign/config.yaml
+    
+    - name: Install config
+      if: ${{ github.os == 'windows' }}
+      shell: pwsh
+      run: |
+        '${{ inputs.ossign_config }}' | Out-File -FilePath "$env:ProgramData\ossign\config.yaml" -Encoding utf8
+    
+    - name: Install ossign
+      if: ${{ github.runner.os == 'linux' }}
+      shell: bash
+      run: |
+        sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
+        echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
+        sudo apt-get update
+        sudo apt-get install -y ossign
+    
+    - name: Install ossign
+      if: ${{ github.runner.os == 'windows' }}
+      shell: pwsh
+      run: |
+        
+    

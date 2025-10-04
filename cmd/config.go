@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ossign/ossigner/pkg/azure"
+	"github.com/ossign/ossign/pkg/azure"
 	"github.com/sassoftware/relic/v8/lib/certloader"
 	"github.com/sassoftware/relic/v8/lib/pkcs9"
 )
@@ -42,17 +42,17 @@ const (
 // }
 
 type SigningConfig struct {
-	TokenType     TokenType     `json:"tokenType" yaml:"tokenType"`
-	SignatureType SignatureType `json:"signatureType" yaml:"signatureType"`
+	TokenType     TokenType     `json:"tokenType" yaml:"tokenType" mapstructure:"tokenType"`
+	SignatureType SignatureType `json:"signatureType" yaml:"signatureType" mapstructure:"signatureType"`
 
-	AzureConfig AzureConfig `json:"azure,omitempty" yaml:"azure,omitempty"`
-	CertConfig  CertConfig  `json:"certificate,omitempty" yaml:"certificate,omitempty"`
+	AzureConfig AzureConfig `json:"azure,omitempty" yaml:"azure,omitempty" mapstructure:"azure"`
+	CertConfig  CertConfig  `json:"certificate,omitempty" yaml:"certificate,omitempty" mapstructure:"certificate"`
 
-	TimestampUrl   string `json:"timestampUrl,omitempty" yaml:"timestampUrl,omitempty"`
-	MsTimestampUrl string `json:"msTimestampUrl,omitempty" yaml:"msTimestampUrl,omitempty"`
+	TimestampUrl   string `json:"timestampUrl,omitempty" yaml:"timestampUrl,omitempty" mapstructure:"timestampUrl"`
+	MsTimestampUrl string `json:"msTimestampUrl,omitempty" yaml:"msTimestampUrl,omitempty" mapstructure:"msTimestampUrl"`
 
-	InputFile  string `json:"inputFile" yaml:"inputFile"`
-	OutputFile string `json:"outputFile" yaml:"outputFile"`
+	InputFile  string `json:"inputFile" yaml:"inputFile" mapstructure:"inputFile"`
+	OutputFile string `json:"outputFile" yaml:"outputFile" mapstructure:"outputFile"`
 }
 
 func UnmarshalConfig(path string) (*SigningConfig, error) {
@@ -131,18 +131,18 @@ func (c *SigningConfig) GetSigner(timestamper pkcs9.Timestamper, ctx context.Con
 }
 
 type AzureConfig struct {
-	VaultUrl           string `json:"vaultUrl" yaml:"vaultUrl"`
-	TenantId           string `json:"tenantId" yaml:"tenantId"`
-	ClientId           string `json:"clientId" yaml:"clientId"`
-	ClientSecret       string `json:"clientSecret" yaml:"clientSecret"`
-	CertificateName    string `json:"certificateName" yaml:"certificateName"`
-	CertificateVersion string `json:"certificateVersion,omitempty" yaml:"certificateVersion,omitempty"`
+	VaultUrl           string `json:"vaultUrl" yaml:"vaultUrl" mapstructure:"vaultUrl"`
+	TenantId           string `json:"tenantId" yaml:"tenantId" mapstructure:"tenantId"`
+	ClientId           string `json:"clientId" yaml:"clientId" mapstructure:"clientId"`
+	ClientSecret       string `json:"clientSecret" yaml:"clientSecret" mapstructure:"clientSecret"`
+	CertificateName    string `json:"certificateName" yaml:"certificateName" mapstructure:"certificateName"`
+	CertificateVersion string `json:"certificateVersion,omitempty" yaml:"certificateVersion,omitempty" mapstructure:"certificateVersion"`
 }
 
 type CertConfig struct {
-	Certificate string `json:"certificate" yaml:"certificate"`
-	PrivateKey  string `json:"privateKey" yaml:"privateKey"`
-	Passphrase  string `json:"passphrase,omitempty" yaml:"passphrase,omitempty"`
+	Certificate string `json:"certificate" yaml:"certificate" mapstructure:"certificate"`
+	PrivateKey  string `json:"privateKey" yaml:"privateKey" mapstructure:"privateKey"`
+	Passphrase  string `json:"passphrase,omitempty" yaml:"passphrase,omitempty" mapstructure:"passphrase"`
 }
 
 func (c CertConfig) GetPasswd(prompt string) (string, error) {

@@ -4,8 +4,8 @@ import (
 	"crypto"
 	"io"
 
-	"github.com/ossign/ossigner/pkg/authenticode"
-	"github.com/ossign/ossigner/pkg/comdoc"
+	"github.com/ossign/ossign/pkg/authenticode"
+	"github.com/ossign/ossign/pkg/comdoc"
 	"github.com/sassoftware/relic/v8/lib/vfs"
 )
 

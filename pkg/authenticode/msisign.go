@@ -20,7 +20,7 @@ import (
 	"context"
 	"crypto"
 
-	"github.com/ossign/ossigner/pkg/comdoc"
+	"github.com/ossign/ossign/pkg/comdoc"
 
 	"github.com/sassoftware/relic/v8/lib/certloader"
 	"github.com/sassoftware/relic/v8/lib/pkcs9"

@@ -1,0 +1,14 @@
+name: Code Signing
+description: Sign binaries using ossigner
+author: OSSign
+
+branding:
+  icon: feather
+  color: green
+
+runs:
+  using: composite
+  steps:
+    - name: Echo
+      shell: bash
+      run: echo "This is the root repository. Use one of the actions in the action/ subdirectory"

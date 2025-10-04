@@ -1,0 +1,107 @@
+name: Build and Publish Packages
+
+on:
+  push:
+    tags: ["*.*.*"]
+
+
+jobs:
+  build:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - id: go
+      name: Install go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.25.0
+        cache-dependency-path: go.mod
+    
+    - name: Login to ghcr.io
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ossign
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Login to docker hub
+      uses: docker/login-action@v2
+      with:
+        registry: docker.io
+        username: ossign
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+    
+    # - name: Install dependencies
+    #   run: |
+    #     sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
+    #     echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
+    #     sudo apt-get update
+    #     sudo apt-get install -y goest
+
+
+    - name: Goreleaser
+      uses: goreleaser/goreleaser-action@v6
+      if: ${{ github.ref_name != 'main' }}
+      with:
+        version: ${{ github.event.release.tag.name }}
+        args: release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        UPLOAD_DEBPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_APKPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_RPMPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+      
+    - name: Goreleaser
+      uses: goreleaser/goreleaser-action@v6
+      if: ${{ github.ref_name == 'main' }}
+      with:
+        version: ${{ github.event.release.tag.name }}
+        args: release --snapshot --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        UPLOAD_DEBPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_APKPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_RPMPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release
+        path: dist/**
+
+  windocker:
+    permissions: write-all
+    runs-on: windows-2025
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+    
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: dist/
+    
+      - name: Login to ghcr.io
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ossign
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to docker hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ossign
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: Build Windows Docker Image
+        run: |
+          docker build -t ghcr.io/ossign/goest:windows -f windows.Dockerfile ./dist/winbuild_windows_amd64_v1
+          docker tag ghcr.io/ossign/goest:windows ossign/goest:windows
+          
+          docker push ghcr.io/ossign/goest:windows
+          docker push ossign/goest:windows

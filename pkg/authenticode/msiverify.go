@@ -26,7 +26,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/ossign/ossigner/pkg/comdoc"
+	"github.com/ossign/ossign/pkg/comdoc"
 
 	"github.com/sassoftware/relic/v8/lib/pkcs7"
 	"github.com/sassoftware/relic/v8/lib/pkcs9"

@@ -24,7 +24,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/ossign/ossigner/pkg/comdoc"
+	"github.com/ossign/ossign/pkg/comdoc"
 )
 
 const (

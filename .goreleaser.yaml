@@ -1,0 +1,148 @@
+version: 2
+
+builds:
+  - main: ./cmd/
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+  - id: winbuild
+    main: ./cmd/
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+    format_overrides:
+      - goos: windows
+        format: zip
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+nfpms:
+  - id: ossign
+    package_name: "ossign"
+    description: "ossign - A code signing tool"
+    vendor: "OSSign"
+    maintainer: OSSign <contact@ossign.org>
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}amd64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    formats:
+      - deb
+      - apk
+      - rpm
+    bindir: /usr/local/bin
+
+# binary_signs:
+#   - id: ossign
+#     ids:
+#       - winbuild
+#     cmd: ossign
+#     signature: "${artifact}"
+#     args:
+#       - sign
+#       - azurekv
+#       - --config
+#       - ./config.yaml
+#       - ${artifact}
+
+release:
+  github:
+    owner: ossign
+    name: ossign
+
+dockers:
+  - id: ossign-linux-amd64
+    use: docker
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+    - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
+    - ossign/ossign:{{ .Tag }}-linux-amd64
+  - id: ossign-linux-arm64
+    use: docker
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    image_templates:
+    - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
+    - ossign/ossign:{{ .Tag }}-linux-arm64
+
+docker_manifests:
+  - name_template: ghcr.io/ossign/ossign:latest
+    image_templates:
+      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
+      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
+  
+  - name_template: ghcr.io/ossign/ossign:{{ .Tag }}
+    image_templates:
+      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-amd64
+      - ghcr.io/ossign/ossign:{{ .Tag }}-linux-arm64
+  
+  - name_template: ossign/ossign:latest
+    image_templates:
+      - ossign/ossign:{{ .Tag }}-linux-amd64
+      - ossign/ossign:{{ .Tag }}-linux-arm64
+  
+  - name_template: ossign/ossign:{{ .Tag }}
+    image_templates:
+      - ossign/ossign:{{ .Tag }}-linux-amd64
+      - ossign/ossign:{{ .Tag }}-linux-arm64
+
+uploads:
+  - name: "debpkg"
+    method: "PUT"
+    exts:
+      - deb
+    mode: archive
+    username: "ossign-dev"
+    target: https://pkg.ossign.org/debian/pool/all/main/upload
+    custom_artifact_name: true
+  
+  - name: "apkpkg"
+    method: "PUT"
+    exts:
+      - apk
+    mode: archive
+    username: "ossign-dev"
+    target: https://pkg.ossign.org/alpine/all/repository
+    custom_artifact_name: true
+  
+  - name: "rpmpkg"
+    method: "PUT"
+    exts:
+      - rpm
+    mode: archive
+    username: "ossign-dev"
+    target: https://pkg.ossign.org/rpm/upload
+    custom_artifact_name: true

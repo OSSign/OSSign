@@ -3,32 +3,53 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log"
-	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/ossign/ossigner/pkg/signers"
-	"github.com/ossign/ossigner/pkg/transformers"
-	"github.com/ossign/ossigner/pkg/vfs"
+	"github.com/ossign/ossign/pkg/signers"
+	"github.com/ossign/ossign/pkg/transformers"
+	"github.com/ossign/ossign/pkg/vfs"
 	"github.com/sassoftware/relic/v8/config"
 	"github.com/sassoftware/relic/v8/lib/pkcs9/tsclient"
 	rvfs "github.com/sassoftware/relic/v8/lib/vfs"
+	"github.com/spf13/cobra"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("Usage: ossigner <config.json>")
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatalf("Error executing command: %v", err)
+	}
+}
+
+func Run(cmd *cobra.Command, args []string) {
+	if len(args) == 1 {
+		GlobalConfig.InputFile = args[0]
 	}
 
-	cfg, err := UnmarshalConfig(os.Args[1])
-	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
+	if signType, err := cmd.Flags().GetString("sign-type"); err == nil && signType != "" {
+		GlobalConfig.SignatureType = SignatureType(signType)
+	}
+
+	if outFile, err := cmd.Flags().GetString("output"); err == nil && outFile != "" {
+		GlobalConfig.OutputFile = outFile
+	}
+
+	if GlobalConfig.InputFile == "" {
+		log.Fatal("No input file specified")
+	}
+
+	if GlobalConfig.OutputFile == "" {
+		fileExt := filepath.Ext(GlobalConfig.InputFile)
+		GlobalConfig.OutputFile = fmt.Sprintf("%s-signed.%s", strings.TrimSuffix(filepath.Base(GlobalConfig.InputFile), fileExt), fileExt)
 	}
 
 	ctx := context.Background()
 
 	timestampConfig := config.TimestampConfig{
-		URLs:   []string{cfg.TimestampUrl},
-		MsURLs: []string{cfg.MsTimestampUrl},
+		URLs:   []string{GlobalConfig.TimestampUrl},
+		MsURLs: []string{GlobalConfig.MsTimestampUrl},
 	}
 
 	timestamper, err := tsclient.New(&timestampConfig)
@@ -36,19 +57,19 @@ func main() {
 		log.Fatalf("Error creating timestamper: %v", err)
 	}
 
-	signerCert, err := cfg.GetSigner(timestamper, ctx)
+	signerCert, err := GlobalConfig.GetSigner(timestamper, ctx)
 	if err != nil {
 		log.Fatalf("Error getting signer: %v", err)
 	}
 
-	file, err := vfs.ReadFromFile(cfg.InputFile)
+	file, err := vfs.ReadFromFile(GlobalConfig.InputFile)
 	if err != nil {
 		log.Fatalf("Error reading input file: %v", err)
 	}
 
-	outfileFdesc := rvfs.New([]byte{}, cfg.OutputFile)
+	outfileFdesc := rvfs.New([]byte{}, GlobalConfig.OutputFile)
 
-	switch cfg.SignatureType {
+	switch GlobalConfig.SignatureType {
 	case "powershell":
 		transformer := transformers.NewNoFileTransformer(file)
 		transformReader, err := transformer.GetReader()
@@ -56,7 +77,7 @@ func main() {
 			log.Fatalf("Error getting transformer reader: %v", err)
 		}
 
-		signed, err := signers.SignPowershell(transformReader, signerCert, cfg.InputFile, ctx)
+		signed, err := signers.SignPowershell(transformReader, signerCert, GlobalConfig.InputFile, ctx)
 		if err != nil {
 			log.Fatalf("Error signing file: %v", err)
 		}
@@ -69,7 +90,7 @@ func main() {
 			log.Fatalf("Error writing output file: %v", err)
 		}
 
-		log.Printf("Successfully signed %s to %s", cfg.InputFile, cfg.OutputFile)
+		log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
 
 	case "pecoff":
 		transformer := transformers.NewDefaultTransformer(file)
@@ -78,7 +99,7 @@ func main() {
 			log.Fatalf("Error getting transformer reader: %v", err)
 		}
 
-		signed, err := signers.SignPecoff(transformReader, signerCert, cfg.InputFile, ctx)
+		signed, err := signers.SignPecoff(transformReader, signerCert, GlobalConfig.InputFile, ctx)
 		if err != nil {
 			log.Fatalf("Error signing file: %v", err)
 		}
@@ -91,7 +112,7 @@ func main() {
 			log.Fatalf("Error writing output file: %v", err)
 		}
 
-		log.Printf("Successfully signed %s to %s", cfg.InputFile, cfg.OutputFile)
+		log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
 
 	case "msi":
 		transformer, err := transformers.NewMsiTransformer(file)
@@ -104,7 +125,7 @@ func main() {
 			log.Fatalf("Error getting transformer reader: %v", err)
 		}
 
-		signed, err := signers.SignMsi(transformReader, signerCert, cfg.InputFile, ctx)
+		signed, err := signers.SignMsi(transformReader, signerCert, GlobalConfig.InputFile, ctx)
 		if err != nil {
 			log.Fatalf("Error signing file: %v", err)
 		}
@@ -117,10 +138,9 @@ func main() {
 			log.Fatalf("Error writing output file: %v", err)
 		}
 
-		log.Printf("Successfully signed %s to %s", cfg.InputFile, cfg.OutputFile)
+		log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
 
 	default:
-		log.Fatalf("Unsupported signature type: %s", cfg.SignatureType)
+		log.Fatalf("Unsupported signature type: %s", GlobalConfig.SignatureType)
 	}
-
 }
