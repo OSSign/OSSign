@@ -23,16 +23,17 @@ runs:
         sudo mkdir /etc/ossign
         echo '${{ inputs.ossign_config }}' > /tmp/ossign-config.yml
         sudo mv /tmp/ossign-config.yml /etc/ossign/config.yaml
+        ls -la /etc/ossign
     
     - name: Install config
       if: ${{ runner.os == 'windows' }}
-      shell: bash
+      shell: pwsh
       run: |
-        echo "Program Files: $ProgramFiles"
-        echo "Program Files2: $env:ProgramFiles"
-        mkdir "$ProgramFiles/ossign"
-        echo '${{ inputs.ossign_config }}' > "$ProgramFiles/ossign/config.yaml"
-    
+        $ProgressPreference = 'SilentlyContinue'
+        New-Item -Path "$env:ProgramData\ossign" -ItemType Directory -Force
+        Write-Host '${{ inputs.ossign_config }}' | Set-Content "$env:ProgramData\ossign\config.yaml" -Force
+        gci "$env:ProgramData\ossign"
+
     - name: Install ossign (linux/amd64,linux/arm64)
       if: ${{ runner.os == 'linux' }}
       shell: bash
