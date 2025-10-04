@@ -26,10 +26,10 @@ runs:
     
     - name: Install config
       if: ${{ runner.os == 'windows' }}
-      shell: pwsh
+      shell: bash
       run: |
-        Create-Item -Path "$env:ProgramData\ossign" -ItemType Directory -Force
-        '${{ inputs.ossign_config }}' | Out-File -FilePath "$env:ProgramData\ossign\config.yaml" -Encoding utf8
+        mkdir "$ProgramFiles/ossign"
+        echo '${{ inputs.ossign_config }}' > "$ProgramFiles/ossign/config.yaml"
     
     - name: Install ossign (linux/amd64,linux/arm64)
       if: ${{ runner.os == 'linux' }}
