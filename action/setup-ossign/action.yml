@@ -45,7 +45,8 @@ runs:
       if: ${{ runner.os == 'windows' && runner.arch != 'ARM64' }}
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/latest/download/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
         $env:Path += ";$env:ProgramFiles\ossign"
         [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
         $env:GITHUB_PATH = "$env:ProgramFiles\ossign;$env:GITHUB_PATH"
@@ -54,9 +55,9 @@ runs:
 
 
 # URLS
-# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Darwin_x86_64
-# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Darwin_arm64
-# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Linux_x86_64
-# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Linux_arm64
-# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_x86_64
-# https://github.com/OSSign/OSSign/releases/download/latest/ossign_Windows_arm64
+# https://github.com/OSSign/OSSign/releases/latest/download/ossign_Darwin_x86_64
+# https://github.com/OSSign/OSSign/releases/latest/download/ossign_Darwin_arm64
+# https://github.com/OSSign/OSSign/releases/latest/download/ossign_Linux_x86_64
+# https://github.com/OSSign/OSSign/releases/latest/download/ossign_Linux_arm64
+# https://github.com/OSSign/OSSign/releases/latest/download/ossign_Windows_x86_64
+# https://github.com/OSSign/OSSign/releases/latest/download/ossign_Windows_arm64
