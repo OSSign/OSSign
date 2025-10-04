@@ -28,6 +28,8 @@ runs:
       if: ${{ runner.os == 'windows' }}
       shell: bash
       run: |
+        echo "Program Files: $ProgramFiles"
+        echo "Program Files2: $env:ProgramFiles"
         mkdir "$ProgramFiles/ossign"
         echo '${{ inputs.ossign_config }}' > "$ProgramFiles/ossign/config.yaml"
     
@@ -46,6 +48,7 @@ runs:
       shell: pwsh
       run: |
         $ProgressPreference = 'SilentlyContinue'
+        New-Item -Path "$env:ProgramFiles\ossign" -ItemType Directory -Force
         Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/latest/download/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
         $env:Path += ";$env:ProgramFiles\ossign"
         [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
