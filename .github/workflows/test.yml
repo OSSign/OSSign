@@ -11,3 +11,12 @@ jobs:
                     {
                         "hello": "world"
                     }
+    test-win:
+        runs-on: windows-latest
+        steps:
+            - uses: ossign/ossign/action/setup-ossign@main
+              with:
+                ossign_config: |
+                    {
+                        "hello": "world"
+                    }
