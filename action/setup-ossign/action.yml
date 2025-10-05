@@ -21,6 +21,7 @@ runs:
     - name: Install OSSign
       uses: ossign/ossign/action/sign@main
       with:
+        token: '${{ inputs.token }}'
         installOnly: 'true'
         config: '${{ inputs.ossign_config }}'
     # - name: Install config
