@@ -57,7 +57,7 @@ export async function run() {
         configPath = await InstallConfig();
     }
 
-    const binaryPath = InstallOssign();
+    const binaryPath = await InstallOssign();
     if (installOnly) {
         core.info("OSSign Binary has been successfully installed");
         core.setOutput("ossign_path", binaryPath);

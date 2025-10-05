@@ -15,17 +15,26 @@ const archTranslations: { [key: string]: string } = {
 };
 
 export async function FindLatestToolVersion() : Promise<string> {
+    core.info("Finding latest ossign version...");
     const token = core.getInput("token");
+    core.info("Using provided GitHub token to fetch latest release");
     
+    if (!token || token.trim() === "") {
+        throw new Error("GitHub token is required to fetch latest release");
+    }
     const response = await github.getOctokit(token).rest.repos.getLatestRelease({
         owner: "ossign",
         repo: "ossign",
     });
 
+    core.info(`Latest release response: ${JSON.stringify(response.data)}`);
+
     const tagName = response.data.tag_name;
     if (!tagName) {
         throw new Error("Could not find latest release tag");
     }
+
+    core.info(`Latest release tag is ${tagName}`);
 
     return tagName;
 }
