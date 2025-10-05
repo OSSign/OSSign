@@ -51,8 +51,15 @@ export async function run() {
         return;
     }
 
-    const resp = await exec.exec("ossign", ["--help"]);
-    core.info(`ossign --help exited with code ${resp}`);
+    try {
+        const resp = await exec.exec("ossign", ["--help"]);
+        core.info(`ossign --help exited with code ${resp}`);
+    } catch (error) {
+        const resp = await exec.exec(binaryPath + "/ossign", ["--help"]);
+        core.info(`ossign --help exited with code ${resp}`);
+    }
+
+    
 
     
 //     const inputFile = core.getInput("inputFile");

@@ -33914,8 +33914,14 @@ async function run() {
     if (installOnly) {
         return;
     }
-    const resp = await execExports.exec("ossign", ["--help"]);
-    coreExports.info(`ossign --help exited with code ${resp}`);
+    try {
+        const resp = await execExports.exec("ossign", ["--help"]);
+        coreExports.info(`ossign --help exited with code ${resp}`);
+    }
+    catch (error) {
+        const resp = await execExports.exec(binaryPath + "/ossign", ["--help"]);
+        coreExports.info(`ossign --help exited with code ${resp}`);
+    }
     //     const inputFile = core.getInput("inputFile");
     //     const outputFile = core.getInput("outputFile");
     //     const fileType = core.getInput("fileType");
