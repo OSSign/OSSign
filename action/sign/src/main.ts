@@ -47,9 +47,12 @@ export async function run() {
     core.setOutput("ossignPath", binaryPath);
     core.setOutput("configPath", configPath);
     if (installOnly) {
-        
         return;
     }
+
+    core.info("Path is " + binaryPath);
+    core.info("Config path is " + configPath);
+    core.info("Files in binary path: " + (await fs.readdir(binaryPath)).join(", "));
 
     try {
         const resp = await exec.exec("ossign", ["--help"]);

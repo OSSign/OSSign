@@ -76,7 +76,9 @@ export async function GetBinary(version: string) : Promise<string> {
 export async function InstallOssign() : Promise<string> {
     const version = await FindLatestToolVersion();
     core.info(`Latest ossign version is ${version}`);
+
     const binaryPath = await GetBinary(version);
     core.info(`ossign installed at ${binaryPath}`);
+    
     return binaryPath;
 }

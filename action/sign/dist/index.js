@@ -33914,6 +33914,9 @@ async function run() {
     if (installOnly) {
         return;
     }
+    coreExports.info("Path is " + binaryPath);
+    coreExports.info("Config path is " + configPath);
+    coreExports.info("Files in binary path: " + (await fs.readdir(binaryPath)).join(", "));
     try {
         const resp = await execExports.exec("ossign", ["--help"]);
         coreExports.info(`ossign --help exited with code ${resp}`);
