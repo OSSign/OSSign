@@ -33875,39 +33875,27 @@ async function InstallOssign() {
     return binaryPath;
 }
 
-process.env["ProgramFiles"] ? `${process.env["ProgramFiles"]}\\ossign\\ossign.exe` : "C:\\Program Files\\ossign\\ossign.exe";
-// async function CheckWorkflow(username: string, token: string, id: string) : Promise<WorkflowStatusResponse> {
-//     core.info(`Checking workflow status for ID ${id}...`);
-//     const response = await CallApi(`check/${username}/${id}`, undefined, token);
-//     return response;
-// }
 async function InstallConfig() {
     const config = coreExports.getInput("config");
-    if (!config || config.trim() === "") {
-        throw new Error("Config is required");
+    if (!config || config.trim() === "" || config.length < 10) {
+        coreExports.info("No config provided, skipping config installation");
+        return "";
     }
     const platform = process.platform;
+    let configPath = "";
     if (platform === "win32") {
-        const configPath = `${process.env["ProgramData"]}\\ossign\\config.yaml`;
+        configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
         coreExports.info(`Writing config to ${configPath}...`);
-        await fs.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
+        await fs.mkdir(`${process.env["USERPROFILE"]}\\ossign`, { recursive: true });
         await fs.writeFile(configPath, config);
-        // await require("fs").promises.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
-        // await require("fs").promises.writeFile(configPath, config);
-        return configPath;
-    }
-    else if (platform === "linux" || platform === "darwin") {
-        const configPath = "/etc/ossign/config.yaml";
-        coreExports.info(`Writing config to ${configPath}...`);
-        await fs.mkdir("/etc/ossign", { recursive: true });
-        await fs.writeFile(configPath, config);
-        // // await require("fs").promises.mkdir("/etc/ossign", { recursive: true });
-        // await require("fs").promises.writeFile(configPath, config);
-        return configPath;
     }
     else {
-        throw new Error(`Unsupported platform: ${platform}`);
+        configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
+        coreExports.info(`Writing config to ${configPath}...`);
+        await fs.mkdir(`${process.env["HOME"]}/.ossign`, { recursive: true });
+        await fs.writeFile(configPath, config);
     }
+    return configPath;
 }
 async function run() {
     const config = coreExports.getInput("config");
