@@ -33823,7 +33823,8 @@ const archTranslations = {
     'ia32': 'i386'
 };
 async function FindLatestToolVersion() {
-    const response = await githubExports.getOctokit(await coreExports.getIDToken()).rest.repos.getLatestRelease({
+    const token = coreExports.getInput("token");
+    const response = await githubExports.getOctokit(token).rest.repos.getLatestRelease({
         owner: "ossign",
         repo: "ossign",
     });

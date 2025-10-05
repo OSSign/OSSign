@@ -15,7 +15,9 @@ const archTranslations: { [key: string]: string } = {
 };
 
 export async function FindLatestToolVersion() : Promise<string> {
-    const response = await github.getOctokit(await core.getIDToken()).rest.repos.getLatestRelease({
+    const token = core.getInput("token");
+    
+    const response = await github.getOctokit(token).rest.repos.getLatestRelease({
         owner: "ossign",
         repo: "ossign",
     });
