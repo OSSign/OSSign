@@ -27,6 +27,8 @@ var MapTypeToFunc = map[SignatureType]func(*rvfs.File, *certloader.Certificate, 
 	"msi":         SignMsi,
 	"appx":        SignAppx,
 	"appmanifest": SignAppmanifest,
+	"dmg":         SignDmg,
+	"machos":      SignMachos,
 }
 
 func Run(cmd *cobra.Command, args []string) {

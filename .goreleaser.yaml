@@ -31,7 +31,6 @@ builds:
       - amd64
       - arm64
 
-
 archives:
   - formats: [ tar.gz, binary ]
     name_template: >-

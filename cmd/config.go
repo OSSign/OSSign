@@ -53,6 +53,15 @@ type SigningConfig struct {
 
 	InputFile  string `json:"inputFile" yaml:"inputFile" mapstructure:"inputFile"`
 	OutputFile string `json:"outputFile" yaml:"outputFile" mapstructure:"outputFile"`
+
+	Params map[string]string `json:"params,omitempty" yaml:"params,omitempty" mapstructure:"params"`
+}
+
+func (c *SigningConfig) GetParamDefault(key, def string) string {
+	if val, ok := c.Params[key]; ok {
+		return val
+	}
+	return def
 }
 
 func UnmarshalConfig(path string) (*SigningConfig, error) {
