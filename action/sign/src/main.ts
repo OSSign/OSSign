@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import * as toolcache from '@actions/tool-cache';
 import { InstallOssign } from "./tool.ts";
+import * as fs from "fs/promises";
 
 const winPath = process.env["ProgramFiles"] ? `${process.env["ProgramFiles"]}\\ossign\\ossign.exe` : "C:\\Program Files\\ossign\\ossign.exe";
 const linuxPath = "/usr/local/bin/ossign";
@@ -25,15 +26,19 @@ async function InstallConfig() : Promise<string> {
 
     if (platform === "win32") {
         const configPath = `${process.env["ProgramData"]}\\ossign\\config.yaml`;
-        core.info(`Writing config to ${configPath}...`);
-        await require("fs").promises.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
-        await require("fs").promises.writeFile(configPath, config);
+        core.info(`Writing config to ${configPath}...`);3
+        await fs.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
+        await fs.writeFile(configPath, config);
+        // await require("fs").promises.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
+        // await require("fs").promises.writeFile(configPath, config);
         return configPath;
     } else if (platform === "linux" || platform === "darwin") {
         const configPath = "/etc/ossign/config.yaml";
         core.info(`Writing config to ${configPath}...`);
-        await require("fs").promises.mkdir("/etc/ossign", { recursive: true });
-        await require("fs").promises.writeFile(configPath, config);
+        await fs.mkdir("/etc/ossign", { recursive: true });
+        await fs.writeFile(configPath, config);
+        // // await require("fs").promises.mkdir("/etc/ossign", { recursive: true });
+        // await require("fs").promises.writeFile(configPath, config);
         return configPath;
     } else {
         throw new Error(`Unsupported platform: ${platform}`);

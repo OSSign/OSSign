@@ -27,6 +27,7 @@ import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
 import require$$2$3 from 'child_process';
 import require$$6$1 from 'timers';
+import * as fs from 'fs/promises';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -33881,15 +33882,19 @@ async function InstallConfig() {
     if (platform === "win32") {
         const configPath = `${process.env["ProgramData"]}\\ossign\\config.yaml`;
         coreExports.info(`Writing config to ${configPath}...`);
-        await require("fs").promises.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
-        await require("fs").promises.writeFile(configPath, config);
+        await fs.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
+        await fs.writeFile(configPath, config);
+        // await require("fs").promises.mkdir(`${process.env["ProgramData"]}\\ossign`, { recursive: true });
+        // await require("fs").promises.writeFile(configPath, config);
         return configPath;
     }
     else if (platform === "linux" || platform === "darwin") {
         const configPath = "/etc/ossign/config.yaml";
         coreExports.info(`Writing config to ${configPath}...`);
-        await require("fs").promises.mkdir("/etc/ossign", { recursive: true });
-        await require("fs").promises.writeFile(configPath, config);
+        await fs.mkdir("/etc/ossign", { recursive: true });
+        await fs.writeFile(configPath, config);
+        // // await require("fs").promises.mkdir("/etc/ossign", { recursive: true });
+        // await require("fs").promises.writeFile(configPath, config);
         return configPath;
     }
     else {
