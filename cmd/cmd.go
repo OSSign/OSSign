@@ -49,18 +49,14 @@ func initConfig() {
 			}
 			config = configBytes
 		} else {
-			log.Print("Using config from OSSIGN_CONFIG environment variable")
+			log.Print("Using config from OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64 environment variable")
 			config = []byte(os.Getenv("OSSIGN_CONFIG"))
 		}
 
-		var decoded SigningConfig
-		if err := json.Unmarshal([]byte(config), &decoded); err != nil {
-			log.Fatalf("Error parsing OSSIGN_CONFIG: %v", err)
+		var decoded map[string]interface{}
+		if err := json.Unmarshal([]byte(config), &decoded); err == nil {
+			viper.MergeConfigMap(decoded)
 		}
-
-		GlobalConfig = decoded
-		log.Println("Using config from OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64 environment variable")
-		return
 
 		log.Println("Using config from OSSIGN_CONFIG environment variable")
 
