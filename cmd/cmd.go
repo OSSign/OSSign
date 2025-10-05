@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"log"
 	"os"
 	"path"
@@ -37,6 +39,35 @@ func init() {
 }
 
 func initConfig() {
+	if os.Getenv("OSSIGN_CONFIG") != "" || os.Getenv("OSSIGN_CONFIG_BASE64") != "" {
+		var config []byte
+		if os.Getenv("OSSIGN_CONFIG_BASE64") != "" {
+			configBytes, err := base64.StdEncoding.DecodeString(os.Getenv("OSSIGN_CONFIG_BASE64"))
+			if err != nil {
+				log.Fatalf("Error decoding OSSIGN_CONFIG_BASE64: %v", err)
+			}
+			config = configBytes
+		} else {
+			config = []byte(os.Getenv("OSSIGN_CONFIG"))
+		}
+
+		var decoded SigningConfig
+		if err := json.Unmarshal([]byte(config), &decoded); err == nil {
+			GlobalConfig = decoded
+			log.Println("Using config from OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64 environment variable")
+			return
+		}
+
+		log.Println("Using config from OSSIGN_CONFIG environment variable")
+
+		err := viper.Unmarshal(&GlobalConfig)
+		if err != nil {
+			log.Fatal("Unable to decode into struct:", err)
+		}
+
+		return
+	}
+
 	cfgPath, err := filepath.Abs(filepath.Dir(cfgFile))
 	if err != nil {
 		log.Fatal(err)
