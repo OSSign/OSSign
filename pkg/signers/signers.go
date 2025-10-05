@@ -7,9 +7,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/sassoftware/relic/v8/lib/appmanifest"
 	"github.com/sassoftware/relic/v8/lib/audit"
 	"github.com/sassoftware/relic/v8/lib/authenticode"
 	"github.com/sassoftware/relic/v8/lib/certloader"
+	"github.com/sassoftware/relic/v8/lib/pkcs9"
+	"github.com/sassoftware/relic/v8/lib/signappx"
 	"github.com/sassoftware/relic/v8/signers"
 	"github.com/spf13/pflag"
 )
@@ -50,28 +53,6 @@ func SignPowershell(r io.Reader, cert *certloader.Certificate, filename string, 
 
 	signopts.Audit.SetCounterSignature(ts.CounterSignature)
 	return signopts.SetBinPatch(patch)
-
-	// style, ok := authenticode.GetSigStyle(filename)
-	// if !ok {
-	// 	return nil, fmt.Errorf("unknown signature style %s", filename)
-	// }
-
-	// digest, err := authenticode.DigestPowershell(r, style, crypto.SHA256)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// so := &authenticode.OpusParams{
-	// 	Description: "This software has been signed by OSSign",
-	// 	URL:         "https://ossign.org",
-	// }
-
-	// patch, _, err := digest.Sign(ctx, cert, so)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return patch.Dump(), err
 }
 
 func SignPecoff(r io.Reader, cert *certloader.Certificate, filename string, ctx context.Context) ([]byte, error) {
@@ -102,4 +83,48 @@ func SignMsi(r io.Reader, cert *certloader.Certificate, filename string, ctx con
 	}
 
 	return ts.Raw, nil
+}
+
+func SignAppmanifest(r io.Reader, cert *certloader.Certificate, filename string, ctx context.Context) ([]byte, error) {
+	blob, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	signed, err := appmanifest.Sign(blob, cert, crypto.SHA256)
+
+	if cert.Timestamper != nil {
+		tsreq := &pkcs9.Request{
+			EncryptedDigest: signed.EncryptedDigest,
+			Legacy:          false,
+			Hash:            crypto.SHA256,
+		}
+
+		token, err := cert.Timestamper.Timestamp(ctx, tsreq)
+		if err != nil {
+			return nil, err
+		}
+		if err := signed.AddTimestamp(token); err != nil {
+			return nil, err
+		}
+	}
+
+	return signed.Signed, nil
+}
+
+func SignAppx(r io.Reader, cert *certloader.Certificate, filename string, ctx context.Context) ([]byte, error) {
+	digest, err := signappx.DigestAppxTar(r, crypto.SHA256, false)
+	if err != nil {
+		return nil, err
+	}
+
+	patch, _, _, err := digest.Sign(ctx, cert, &authenticode.OpusParams{
+		Description: "This software has been signed by OSSign",
+		URL:         "https://ossign.org",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return patch.Dump(), nil
 }

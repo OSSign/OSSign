@@ -1,17 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
 
-	"github.com/ossign/ossign/pkg/signers"
-	"github.com/ossign/ossign/pkg/transformers"
 	"github.com/ossign/ossign/pkg/vfs"
 	"github.com/sassoftware/relic/v8/config"
+	"github.com/sassoftware/relic/v8/lib/certloader"
 	"github.com/sassoftware/relic/v8/lib/pkcs9/tsclient"
 	rvfs "github.com/sassoftware/relic/v8/lib/vfs"
 	"github.com/spf13/cobra"
@@ -21,6 +19,14 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatalf("Error executing command: %v", err)
 	}
+}
+
+var MapTypeToFunc = map[SignatureType]func(*rvfs.File, *certloader.Certificate, string, *rvfs.File, context.Context) error{
+	"powershell":  SignPowershell,
+	"pecoff":      SignPecoff,
+	"msi":         SignMsi,
+	"appx":        SignAppx,
+	"appmanifest": SignAppmanifest,
 }
 
 func Run(cmd *cobra.Command, args []string) {
@@ -69,78 +75,21 @@ func Run(cmd *cobra.Command, args []string) {
 
 	outfileFdesc := rvfs.New([]byte{}, GlobalConfig.OutputFile)
 
-	switch GlobalConfig.SignatureType {
-	case "powershell":
-		transformer := transformers.NewNoFileTransformer(file)
-		transformReader, err := transformer.GetReader()
-		if err != nil {
-			log.Fatalf("Error getting transformer reader: %v", err)
-		}
-
-		signed, err := signers.SignPowershell(transformReader, signerCert, GlobalConfig.InputFile, ctx)
-		if err != nil {
-			log.Fatalf("Error signing file: %v", err)
-		}
-
-		if err := transformer.Apply(outfileFdesc, "application/x-binary-patch", bytes.NewReader(signed)); err != nil {
-			log.Fatalf("Error applying signed data: %v", err)
-		}
-
-		if err := vfs.WriteToFile(outfileFdesc); err != nil {
-			log.Fatalf("Error writing output file: %v", err)
-		}
-
-		log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
-
-	case "pecoff":
-		transformer := transformers.NewDefaultTransformer(file)
-		transformReader, err := transformer.GetReader()
-		if err != nil {
-			log.Fatalf("Error getting transformer reader: %v", err)
-		}
-
-		signed, err := signers.SignPecoff(transformReader, signerCert, GlobalConfig.InputFile, ctx)
-		if err != nil {
-			log.Fatalf("Error signing file: %v", err)
-		}
-
-		if err := transformer.Apply(outfileFdesc, "application/x-binary-patch", bytes.NewReader(signed)); err != nil {
-			log.Fatalf("Error applying signed data: %v", err)
-		}
-
-		if err := vfs.WriteToFile(outfileFdesc); err != nil {
-			log.Fatalf("Error writing output file: %v", err)
-		}
-
-		log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
-
-	case "msi":
-		transformer, err := transformers.NewMsiTransformer(file)
-		if err != nil {
-			log.Fatalf("Error creating MSI transformer: %v", err)
-		}
-
-		transformReader, err := transformer.GetReader()
-		if err != nil {
-			log.Fatalf("Error getting transformer reader: %v", err)
-		}
-
-		signed, err := signers.SignMsi(transformReader, signerCert, GlobalConfig.InputFile, ctx)
-		if err != nil {
-			log.Fatalf("Error signing file: %v", err)
-		}
-
-		if err := transformer.Apply(outfileFdesc, "application/x-binary-patch", bytes.NewReader(signed)); err != nil {
-			log.Fatalf("Error applying signed data: %v", err)
-		}
-
-		if err := vfs.WriteToFile(outfileFdesc); err != nil {
-			log.Fatalf("Error writing output file: %v", err)
-		}
-
-		log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
-
-	default:
-		log.Fatalf("Unsupported signature type: %s", GlobalConfig.SignatureType)
+	if GlobalConfig.SignatureType != "" && MapTypeToFunc[GlobalConfig.SignatureType] != nil {
+		err = MapTypeToFunc[GlobalConfig.SignatureType](file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
+	} else {
+		log.Fatalf("No sign type specified or unsupported sign type: %s (auto not implemented yet)", GlobalConfig.SignatureType)
+		// err = SignAuto(file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
 	}
+	if err != nil {
+		log.Fatalf("Error signing file: %v", err)
+	}
+
+	if err := vfs.WriteToFile(outfileFdesc); err != nil {
+		log.Fatalf("Error writing output file: %v", err)
+	}
+
+	log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
+
+	log.Println("Finished signing!")
 }
