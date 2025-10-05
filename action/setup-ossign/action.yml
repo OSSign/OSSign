@@ -15,47 +15,56 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install config
-      if: ${{ runner.os == 'linux' }}
-      shell: bash
-      run: |
-        echo "Runner OS: ${{ runner.os }}, Arch: ${{ runner.arch }}"
-        sudo mkdir /etc/ossign
-        echo '${{ inputs.ossign_config }}' > /tmp/ossign-config.yml
-        sudo mv /tmp/ossign-config.yml /etc/ossign/config.yaml
-        ls -la /etc/ossign
+    - name: Install OSSign
+      uses: ossign/ossign/action/sign@main
+      with:
+        installOnly: 'true'
+        config: '${{ inputs.ossign_config }}'
+    # - name: Install config
+    #   if: ${{ runner.os == 'linux' }}
+    #   shell: bash
+    #   run: |
+    #     echo "Runner OS: ${{ runner.os }}, Arch: ${{ runner.arch }}"
+    #     sudo mkdir /etc/ossign
+    #     echo '${{ inputs.ossign_config }}' > /tmp/ossign-config.yml
+    #     sudo mv /tmp/ossign-config.yml /etc/ossign/config.yaml
+    #     ls -la /etc/ossign
     
-    - name: Install config
-      if: ${{ runner.os == 'windows' }}
-      shell: pwsh
-      run: |
-        $ProgressPreference = 'SilentlyContinue'
-        New-Item -Path "$env:ProgramData\ossign" -ItemType Directory -Force
-        Write-Host '${{ inputs.ossign_config }}' | Set-Content "$env:ProgramData\ossign\config.yaml" -Force
-        gci "$env:ProgramData\ossign"
+    # - name: Install config
+    #   if: ${{ runner.os == 'windows' }}
+    #   shell: pwsh
+    #   run: |
+    #     $ProgressPreference = 'SilentlyContinue'
+    #     New-Item -Path "$env:ProgramData\ossign" -ItemType Directory -Force
+    #     Write-Host '${{ inputs.ossign_config }}' | Set-Content "$env:ProgramData\ossign\config.yaml" -Force
+    #     gci "$env:ProgramData\ossign"
 
-    - name: Install ossign (linux/amd64,linux/arm64)
-      if: ${{ runner.os == 'linux' }}
-      shell: bash
-      run: |
-        sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
-        echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
-        sudo apt-get update
-        sudo apt-get install -y ossign
-        ossign --help
+    # - name: Install ossign (linux/amd64,linux/arm64)
+    #   if: ${{ runner.os == 'linux' }}
+    #   shell: bash
+    #   run: |
+    #     sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
+    #     echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
+    #     sudo apt-get update
+    #     sudo apt-get install -y ossign
+    #     ossign --help
     
-    - name: Install ossign
-      if: ${{ runner.os == 'windows' && runner.arch != 'ARM64' }}
-      shell: pwsh
-      run: |
-        $ProgressPreference = 'SilentlyContinue'
-        New-Item -Path "$env:ProgramFiles\ossign" -ItemType Directory -Force
-        Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/latest/download/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
-        $env:Path += ";$env:ProgramFiles\ossign"
-        [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
-        $env:GITHUB_PATH = "$env:ProgramFiles\ossign;$env:GITHUB_PATH"
-        ossign.exe --help
+    # - name: Install ossign
+    #   if: ${{ runner.os == 'windows' && runner.arch != 'ARM64' }}
+    #   shell: pwsh
+    #   run: |
+    #     $ProgressPreference = 'SilentlyContinue'
+    #     New-Item -Path "$env:ProgramFiles\ossign" -ItemType Directory -Force
+    #     Invoke-WebRequest -Uri "https://github.com/OSSign/OSSign/releases/latest/download/ossign_Windows_x86_64.exe" -OutFile "$env:ProgramFiles\ossign\ossign.exe"
+    #     $env:Path += ";$env:ProgramFiles\ossign"
+    #     [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
+    #     echo "C:\Program Files\ossign" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    #     ossign.exe --help
 
+    # - name: Test OSSign Install
+    #   shell: bash
+    #   run: |
+    #     ossign --help
 
 
 # URLS

@@ -1,16 +1,18 @@
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-    # test:
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - uses: ossign/ossign/action/setup-ossign@main
-    #           with:
-    #             ossign_config: |
-    #                 {
-    #                     "hello": "world"
-    #                 }
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: ossign/ossign/action/setup-ossign@main
+              with:
+                ossign_config: |
+                    {
+                        "hello": "world"
+                    }
     test-win:
         runs-on: windows-latest
         steps:
