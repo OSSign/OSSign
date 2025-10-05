@@ -14,6 +14,7 @@ jobs:
                     {
                         "hello": "world"
                     }
+            - run: ossign --version
     test-win:
         runs-on: windows-latest
         steps:
@@ -24,6 +25,7 @@ jobs:
                     {
                         "hello": "world"
                     }
+            - run: ossign --version
 
     test-macos:
         runs-on: macos-latest
@@ -35,3 +37,4 @@ jobs:
                     {
                         "hello": "world"
                     }
+            - run: ossign --version
