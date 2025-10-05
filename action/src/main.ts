@@ -83,7 +83,9 @@ export async function run() {
 
             const signResp = await exec.getExecOutput("ossign", signcmd, {
                 env: {
-                    "OSSIGN_CONFIG": config
+                    "OSSIGN_CONFIG": config,
+                    "HOME": process.env["HOME"] || "",
+                    "USERPROFILE": process.env["USERPROFILE"] || ""
                 }
             });
             if (signResp.exitCode !== 0) {
@@ -114,8 +116,10 @@ export async function run() {
 
     core.info(`Signing file ${inputFile}...`);
     const signResp = await exec.getExecOutput("ossign", signcmd, {
-        env: {
-            "OSSIGN_CONFIG": config
+       env: {
+            "OSSIGN_CONFIG": config,
+            "HOME": process.env["HOME"] || "",
+            "USERPROFILE": process.env["USERPROFILE"] || ""
         }
     });
     if (signResp.exitCode !== 0) {
