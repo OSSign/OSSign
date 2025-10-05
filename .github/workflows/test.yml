@@ -6,6 +6,8 @@ on:
 jobs:
     test:
         runs-on: ubuntu-latest
+        permissions:
+          id-token: read
         steps:
             - uses: ossign/ossign/action/setup-ossign@main
               with:
@@ -15,6 +17,8 @@ jobs:
                     }
     test-win:
         runs-on: windows-latest
+        permissions:
+          id-token: read
         steps:
             - uses: ossign/ossign/action/setup-ossign@main
               with:
