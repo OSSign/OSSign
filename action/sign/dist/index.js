@@ -33875,6 +33875,8 @@ async function InstallOssign() {
     return binaryPath;
 }
 
+var execExports = requireExec();
+
 async function InstallConfig() {
     const config = coreExports.getInput("config");
     if (!config || config.trim() === "" || config.length < 10) {
@@ -33906,13 +33908,14 @@ async function run() {
         configPath = await InstallConfig();
     }
     const binaryPath = await InstallOssign();
+    coreExports.info("OSSign Binary has been successfully installed");
+    coreExports.setOutput("ossignPath", binaryPath);
+    coreExports.setOutput("configPath", configPath);
     if (installOnly) {
-        coreExports.info("OSSign Binary has been successfully installed");
-        coreExports.setOutput("ossign_path", binaryPath);
-        coreExports.setOutput("config_path", configPath);
         return;
     }
-    coreExports.setFailed("Signing not yet implemented");
+    const resp = await execExports.exec(binaryPath, ["--help"]);
+    coreExports.info(`ossign --help exited with code ${resp}`);
     //     const inputFile = core.getInput("inputFile");
     //     const outputFile = core.getInput("outputFile");
     //     const fileType = core.getInput("fileType");

@@ -24,3 +24,14 @@ jobs:
                     {
                         "hello": "world"
                     }
+
+    test-macos:
+        runs-on: macos-latest
+        steps:
+            - uses: ossign/ossign/action/setup-ossign@main
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                ossign_config: |
+                    {
+                        "hello": "world"
+                    }

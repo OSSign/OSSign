@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import { InstallOssign } from "./tool.ts";
 import * as fs from "fs/promises";
+import * as exec from "@actions/exec";
 
 async function InstallConfig() : Promise<string> {
     const config = core.getInput("config");
@@ -42,15 +43,18 @@ export async function run() {
     }
 
     const binaryPath = await InstallOssign();
+    core.info("OSSign Binary has been successfully installed");
+    core.setOutput("ossignPath", binaryPath);
+    core.setOutput("configPath", configPath);
     if (installOnly) {
-        core.info("OSSign Binary has been successfully installed");
-        core.setOutput("ossign_path", binaryPath);
-        core.setOutput("config_path", configPath);
+        
         return;
     }
 
-    core.setFailed("Signing not yet implemented");
+    const resp = await exec.exec(binaryPath, ["--help"]);
+    core.info(`ossign --help exited with code ${resp}`);
 
+    
 //     const inputFile = core.getInput("inputFile");
 //     const outputFile = core.getInput("outputFile");
 //     const fileType = core.getInput("fileType");
