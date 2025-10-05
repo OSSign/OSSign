@@ -1,15 +1,25 @@
 version: 2
 
 builds:
-  - main: ./cmd/
+  - id: linuxbuild
+    main: ./cmd/
     env:
       - CGO_ENABLED=0
     goos:
       - linux
+    goarch:
+      - amd64
+      - arm64
+
+  - id: macbuild
+    main: ./cmd/
+    env:
+      - CGO_ENABLED=0
+    goos:
       - darwin
     goarch:
       - amd64
-      # - arm64
+      - arm64
 
   - id: winbuild
     main: ./cmd/
@@ -120,6 +130,7 @@ release:
 
 uploads:
   - name: "debpkg"
+    ids: ["linuxbuild"]
     method: "PUT"
     exts:
       - deb
@@ -131,6 +142,7 @@ uploads:
   
   - name: "apkpkg"
     method: "PUT"
+    ids: ["linuxbuild"]
     exts:
       - apk
     mode: archive
@@ -140,6 +152,7 @@ uploads:
   
   - name: "rpmpkg"
     method: "PUT"
+    ids: ["linuxbuild"]
     exts:
       - rpm
     mode: archive
