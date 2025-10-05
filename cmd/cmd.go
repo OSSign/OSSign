@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -23,7 +24,12 @@ var GlobalConfig SigningConfig
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "/etc/ossign/config.yaml", "config file (default is /etc/ossign/config.yaml)")
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", filepath.Join(homedir, ".ossign/config.yaml"), "config file (default is ~/ossign/config.yaml)")
 
 	// Signing flags
 	rootCmd.Flags().StringVarP((*string)(&GlobalConfig.SignatureType), "sign-type", "t", "", "Type of file to sign (powershell, pecoff, authenticode, dmg, auto)")
@@ -36,11 +42,20 @@ func initConfig() {
 		log.Fatal(err)
 	}
 
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	abspath := filepath.Join(homedir, ".ossign")
+
+	viper.AddConfigPath(abspath)
+
 	viper.SetConfigName("config")
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
-		configDir := path.Dir(cfgFile)
-		if configDir != "." && configDir != cfgPath {
+		configDir := path.Dir(cfgPath)
+		if configDir != "." && configDir != abspath {
 			viper.AddConfigPath(configDir)
 		}
 	}
