@@ -33823,15 +33823,22 @@ const archTranslations = {
     'ia32': 'i386'
 };
 async function FindLatestToolVersion() {
+    coreExports.info("Finding latest ossign version...");
     const token = coreExports.getInput("token");
+    coreExports.info("Using provided GitHub token to fetch latest release");
+    if (!token || token.trim() === "") {
+        throw new Error("GitHub token is required to fetch latest release");
+    }
     const response = await githubExports.getOctokit(token).rest.repos.getLatestRelease({
         owner: "ossign",
         repo: "ossign",
     });
+    coreExports.info(`Latest release response: ${JSON.stringify(response.data)}`);
     const tagName = response.data.tag_name;
     if (!tagName) {
         throw new Error("Could not find latest release tag");
     }
+    coreExports.info(`Latest release tag is ${tagName}`);
     return tagName;
 }
 async function GetBinary(version) {
@@ -33910,7 +33917,7 @@ async function run() {
         coreExports.info("Using provided ossign config");
         configPath = await InstallConfig();
     }
-    const binaryPath = InstallOssign();
+    const binaryPath = await InstallOssign();
     if (installOnly) {
         coreExports.info("OSSign Binary has been successfully installed");
         coreExports.setOutput("ossign_path", binaryPath);
