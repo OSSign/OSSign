@@ -7,6 +7,9 @@ branding:
   color: green
 
 inputs:
+  token:
+    description: 'GitHub token with repo read access'
+    required: true
   ossign_config:
     description: 'The configuration for ossign (JSON)'
     required: true
