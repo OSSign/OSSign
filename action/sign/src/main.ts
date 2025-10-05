@@ -51,7 +51,7 @@ export async function run() {
         return;
     }
 
-    const resp = await exec.exec(binaryPath, ["--help"]);
+    const resp = await exec.exec("ossign", ["--help"]);
     core.info(`ossign --help exited with code ${resp}`);
 
     

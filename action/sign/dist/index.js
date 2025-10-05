@@ -33914,7 +33914,7 @@ async function run() {
     if (installOnly) {
         return;
     }
-    const resp = await execExports.exec(binaryPath, ["--help"]);
+    const resp = await execExports.exec("ossign", ["--help"]);
     coreExports.info(`ossign --help exited with code ${resp}`);
     //     const inputFile = core.getInput("inputFile");
     //     const outputFile = core.getInput("outputFile");
