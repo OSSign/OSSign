@@ -33812,6 +33812,8 @@ function requireToolCache () {
 
 var toolCacheExports = requireToolCache();
 
+var execExports = requireExec();
+
 const platformTranslations = {
     'win32': 'Windows',
     'linux': 'Linux',
@@ -33864,6 +33866,9 @@ async function GetBinary(version) {
     if (!cachePath) {
         throw new Error("Failed to cache ossign binary");
     }
+    if (platform !== "Windows") {
+        await execExports.exec(`chmod`, ['+x', `${cachePath}/ossign`]);
+    }
     coreExports.addPath(cachePath);
     return cachePath;
 }
@@ -33874,8 +33879,6 @@ async function InstallOssign() {
     coreExports.info(`ossign installed at ${binaryPath}`);
     return binaryPath;
 }
-
-var execExports = requireExec();
 
 async function InstallConfig() {
     const config = coreExports.getInput("config");
@@ -33918,10 +33921,12 @@ async function run() {
     coreExports.info("Config path is " + configPath);
     coreExports.info("Files in binary path: " + (await fs.readdir(binaryPath)).join(", "));
     try {
+        coreExports.info("Trying to run ossign --help directly");
         const resp = await execExports.exec("ossign", ["--help"]);
         coreExports.info(`ossign --help exited with code ${resp}`);
     }
     catch (error) {
+        coreExports.info("Failed to run ossign --help directly, trying with full path");
         const resp = await execExports.exec(binaryPath + "/ossign", ["--help"]);
         coreExports.info(`ossign --help exited with code ${resp}`);
     }

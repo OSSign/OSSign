@@ -1,6 +1,8 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import * as toolcache from '@actions/tool-cache';
+import * as io from '@actions/io';
+import { exec } from "@actions/exec";
 
 const platformTranslations: { [key: string]: string } = {
     'win32': 'Windows',
@@ -67,6 +69,10 @@ export async function GetBinary(version: string) : Promise<string> {
 
     if (!cachePath) {
         throw new Error("Failed to cache ossign binary");
+    }
+
+    if (platform !== "Windows") {
+        await exec(`chmod`, ['+x', `${cachePath}/ossign`]);
     }
 
     core.addPath(cachePath);

@@ -55,9 +55,11 @@ export async function run() {
     core.info("Files in binary path: " + (await fs.readdir(binaryPath)).join(", "));
 
     try {
+        core.info("Trying to run ossign --help directly");  
         const resp = await exec.exec("ossign", ["--help"]);
         core.info(`ossign --help exited with code ${resp}`);
     } catch (error) {
+        core.info("Failed to run ossign --help directly, trying with full path");
         const resp = await exec.exec(binaryPath + "/ossign", ["--help"]);
         core.info(`ossign --help exited with code ${resp}`);
     }
