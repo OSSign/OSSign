@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -68,27 +67,28 @@ func initConfig() {
 		return
 	}
 
-	cfgPath, err := filepath.Abs(filepath.Dir(cfgFile))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	homedir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	abspath := filepath.Join(homedir, ".ossign")
+	abspathHome := filepath.Join(homedir, ".ossign")
+	var programdir string
 
-	viper.AddConfigPath(abspath)
+	// For Windows, use ProgramData
+	if os.Getenv("ProgramData") != "" {
+		programdir = filepath.Join(os.Getenv("ProgramData"), "ossign")
+	} else {
+		programdir = "/etc/ossign"
+	}
 
+	viper.AddConfigPath(abspathHome)
+	viper.AddConfigPath(programdir)
 	viper.SetConfigName("config")
+	viper.SetConfigType("json")
+
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
-		configDir := path.Dir(cfgPath)
-		if configDir != "." && configDir != abspath {
-			viper.AddConfigPath(configDir)
-		}
 	}
 
 	if err := viper.ReadInConfig(); err == nil {
