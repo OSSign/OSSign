@@ -8,7 +8,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates v1.4.0
 	github.com/go-jose/go-jose/v4 v4.1.2
 	github.com/google/uuid v1.6.0
-	github.com/ossign/go-azure-trusted-signing v0.10.1
+	github.com/ossign/go-azure-trusted-signing v0.10.2
 	github.com/sassoftware/relic/v8 v8.2.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.10
@@ -17,8 +17,6 @@ require (
 )
 
 replace github.com/sassoftware/relic/v8 => github.com/ossign/relic/v8 v8.2.2
-
-replace github.com/ossign/go-azure-trusted-signing => ../azuretrustedsigning/go-azure-trusted-signing
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect

@@ -91,6 +91,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/oauth2-proxy/mockoidc v0.0.0-20240214162133-caebfff84d25 h1:9bCMuD3TcnjeqjPT2gSlha4asp8NvgcFRYExCaikCxk=
 github.com/oauth2-proxy/mockoidc v0.0.0-20240214162133-caebfff84d25/go.mod h1:eDjgYHYDJbPLBLsyZ6qRaugP0mX8vePOhZ5id1fdzJw=
+github.com/ossign/go-azure-trusted-signing v0.10.2 h1:UElK2+cMCGCaCLGNaE7DKFzSApZQ4Czr9I7F/JRTGbU=
+github.com/ossign/go-azure-trusted-signing v0.10.2/go.mod h1:lhkUp+F7tbBLKK1iIrrqKD9ip/3dOytFkd2uR0JNzEA=
 github.com/ossign/relic/v8 v8.2.2 h1:Whtvb5vgb7t3KewMjbNG1Mj2WhOEax9YlbUZf8IqHSU=
 github.com/ossign/relic/v8 v8.2.2/go.mod h1:pZy7hLT9WCOKPonV8G/fplvtBLOZd6/kWtKqeHR6nKc=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
