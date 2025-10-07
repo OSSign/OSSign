@@ -65,7 +65,11 @@ func SignPecoff(r io.Reader, cert *certloader.Certificate, filename string, ctx 
 		URL:         "https://ossign.org",
 	})
 
-	return patch.Dump(), err
+	if err != nil {
+		return nil, err
+	}
+
+	return patch.Dump(), nil
 }
 
 func SignMsi(r io.Reader, cert *certloader.Certificate, filename string, ctx context.Context) ([]byte, error) {

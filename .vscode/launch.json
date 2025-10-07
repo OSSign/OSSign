@@ -11,7 +11,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd",
             "cwd": "${workspaceFolder}",
-            "args": [ "tst_config.json" ]
+            "args": [ "-c", "tst_exe_trust.json" ]
         }
     ]
 }

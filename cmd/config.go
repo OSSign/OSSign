@@ -16,8 +16,9 @@ type TokenType string
 type SignatureType string
 
 const (
-	TokenTypeAzure       TokenType = "azure"
-	TokenTypeCertificate TokenType = "certificate"
+	TokenTypeAzure        TokenType = "azure"
+	TokenTypeAzureTrusted TokenType = "azureTrusted"
+	TokenTypeCertificate  TokenType = "certificate"
 
 	AutoSignature         SignatureType = "auto"
 	PowershellSignature   SignatureType = "powershell"
@@ -45,8 +46,10 @@ type SigningConfig struct {
 	TokenType     TokenType     `json:"tokenType" yaml:"tokenType" mapstructure:"tokenType"`
 	SignatureType SignatureType `json:"signatureType" yaml:"signatureType" mapstructure:"signatureType"`
 
-	AzureConfig AzureConfig `json:"azure,omitempty" yaml:"azure,omitempty" mapstructure:"azure"`
-	CertConfig  CertConfig  `json:"certificate,omitempty" yaml:"certificate,omitempty" mapstructure:"certificate"`
+	AzureConfig        AzureConfig        `json:"azure,omitempty" yaml:"azure,omitempty" mapstructure:"azure"`
+	AzureTrustedConfig AzureTrustedConfig `json:"azureTrusted,omitempty" yaml:"azureTrusted,omitempty" mapstructure:"azureTrusted"`
+
+	CertConfig CertConfig `json:"certificate,omitempty" yaml:"certificate,omitempty" mapstructure:"certificate"`
 
 	TimestampUrl   string `json:"timestampUrl,omitempty" yaml:"timestampUrl,omitempty" mapstructure:"timestampUrl"`
 	MsTimestampUrl string `json:"msTimestampUrl,omitempty" yaml:"msTimestampUrl,omitempty" mapstructure:"msTimestampUrl"`
@@ -116,6 +119,10 @@ func (c *SigningConfig) GetSigner(timestamper pkcs9.Timestamper, ctx context.Con
 		return signerCert, nil
 	}
 
+	if c.TokenType == TokenTypeAzureTrusted {
+		return azure.NewAzureTrustedKey(c.AzureTrustedConfig.Region, c.AzureTrustedConfig.TenantId, c.AzureTrustedConfig.ClientId, c.AzureTrustedConfig.ClientSecret, c.AzureTrustedConfig.Account, c.AzureTrustedConfig.Profile, ctx, timestamper)
+	}
+
 	cert, err := certloader.ParseX509Certificates([]byte(c.CertConfig.Certificate))
 	if err != nil {
 		log.Fatalf("Error parsing certificate: %v", err)
@@ -146,6 +153,15 @@ type AzureConfig struct {
 	ClientSecret       string `json:"clientSecret" yaml:"clientSecret" mapstructure:"clientSecret"`
 	CertificateName    string `json:"certificateName" yaml:"certificateName" mapstructure:"certificateName"`
 	CertificateVersion string `json:"certificateVersion,omitempty" yaml:"certificateVersion,omitempty" mapstructure:"certificateVersion"`
+}
+
+type AzureTrustedConfig struct {
+	Region       string `json:"region" yaml:"region" mapstructure:"region"`
+	TenantId     string `json:"tenantId" yaml:"tenantId" mapstructure:"tenantId"`
+	ClientId     string `json:"clientId" yaml:"clientId" mapstructure:"clientId"`
+	ClientSecret string `json:"clientSecret" yaml:"clientSecret" mapstructure:"clientSecret"`
+	Account      string `json:"account" yaml:"account" mapstructure:"account"`
+	Profile      string `json:"profile" yaml:"profile" mapstructure:"profile"`
 }
 
 type CertConfig struct {
