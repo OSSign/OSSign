@@ -36410,7 +36410,7 @@ async function InstallConfig() {
 }
 async function run() {
     const config = coreExports.getInput("config");
-    const installOnly = coreExports.getInput("install_only").toLowerCase() === "true";
+    const installOnly = coreExports.getInput("installOnly").toLowerCase() === "true";
     let configPath = "";
     if (config && config.trim() !== "" && installOnly) {
         coreExports.info("Using provided ossign config");
@@ -36420,16 +36420,18 @@ async function run() {
     coreExports.info("OSSign Binary has been successfully installed");
     coreExports.setOutput("ossignPath", binaryPath);
     coreExports.setOutput("configPath", configPath);
+    coreExports.info("Verifying ossign installation by running 'ossign --help'...");
     const resp = await execExports.getExecOutput("ossign", ["--help"]);
     if (resp.exitCode !== 0) {
         coreExports.error("ossign --help failed, something went wrong with the installation");
         coreExports.error(resp.stderr);
     }
     if (installOnly) {
-        coreExports.info("install_only is set to true, skipping signing step");
+        coreExports.info("installOnly is set to true, skipping signing step");
         coreExports.setOutput("finished", true);
         return;
     }
+    coreExports.info(`installOnly was not set (${installOnly}), running OSSign to sign the provided file(s)`);
     const fileType = coreExports.getInput("fileType");
     const inputFiles = coreExports.getInput("inputFiles");
     if (inputFiles && inputFiles.trim() !== "") {

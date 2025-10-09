@@ -34,7 +34,7 @@ async function InstallConfig() : Promise<string> {
    
 export async function run() {
     const config = core.getInput("config");
-    const installOnly = core.getInput("install_only").toLowerCase() === "true";
+    const installOnly = core.getInput("installOnly").toLowerCase() === "true";
 
     let configPath = "";
 
@@ -48,6 +48,8 @@ export async function run() {
     core.setOutput("ossignPath", binaryPath);
     core.setOutput("configPath", configPath);
 
+    core.info("Verifying ossign installation by running 'ossign --help'...");
+
     const resp = await exec.getExecOutput("ossign", ["--help"]);
     if (resp.exitCode !== 0) {
         core.error("ossign --help failed, something went wrong with the installation");
@@ -55,10 +57,12 @@ export async function run() {
     }
 
     if (installOnly) {
-        core.info("install_only is set to true, skipping signing step");
+        core.info("installOnly is set to true, skipping signing step");
         core.setOutput("finished", true);
         return;
     }
+
+    core.info(`installOnly was not set (${installOnly}), running OSSign to sign the provided file(s)`);
 
     const fileType = core.getInput("fileType");
 
