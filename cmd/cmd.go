@@ -55,6 +55,8 @@ func initConfig() {
 		var decoded map[string]interface{}
 		if err := json.Unmarshal([]byte(config), &decoded); err == nil {
 			viper.MergeConfigMap(decoded)
+		} else {
+			log.Fatalf("Error parsing OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64: %v", err)
 		}
 
 		log.Println("Using config from OSSIGN_CONFIG environment variable")
