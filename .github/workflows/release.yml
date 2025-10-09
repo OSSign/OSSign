@@ -33,12 +33,10 @@ jobs:
         username: ossign
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     
-    # - name: Install dependencies
-    #   run: |
-    #     sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
-    #     echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
-    #     sudo apt-get update
-    #     sudo apt-get install -y goest
+    - name: Setup OSSign
+      uses: ossign/actions/setup-ossign@main
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
 
     - name: Goreleaser
@@ -52,18 +50,32 @@ jobs:
         UPLOAD_DEBPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
         UPLOAD_APKPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
         UPLOAD_RPMPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+        MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+        MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
+        MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
+        OSSIGN_CONFIG: ${{ secrets.OSSIGN_CONFIG }}
+
+
       
     - name: Goreleaser
       uses: goreleaser/goreleaser-action@v6
       if: ${{ github.ref_name == 'main' }}
       with:
         version: ${{ github.event.release.tag.name }}
-        args: release --snapshot --clean
+        args: build --snapshot --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         UPLOAD_DEBPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
         UPLOAD_APKPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
         UPLOAD_RPMPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+        MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+        MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
+        MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
+        OSSIGN_CONFIG: ${{ secrets.OSSIGN_CONFIG }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

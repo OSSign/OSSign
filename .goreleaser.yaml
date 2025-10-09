@@ -1,7 +1,7 @@
 version: 2
 
 builds:
-  - id: linuxbuild
+  - id: linuxbuild-amd
     main: ./cmd/
     env:
       - CGO_ENABLED=0
@@ -9,6 +9,14 @@ builds:
       - linux
     goarch:
       - amd64
+  
+  - id: linuxbuild-arm
+    main: ./cmd/
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
       - arm64
 
   - id: macbuild
@@ -52,9 +60,9 @@ changelog:
       - "^test:"
 
 nfpms:
-  - id: ossign-linuxbuild-nfpms
+  - id: linuxbuild-amd-nfpms
     ids:
-      - linuxbuild
+      - linuxbuild-amd
     package_name: "ossign"
     description: "ossign - A code signing tool"
     vendor: "OSSign"
@@ -72,18 +80,38 @@ nfpms:
       - rpm
     bindir: /usr/local/bin
 
-# binary_signs:
-#   - id: ossign
-#     ids:
-#       - winbuild
-#     cmd: ossign
-#     signature: "${artifact}"
-#     args:
-#       - sign
-#       - azurekv
-#       - --config
-#       - ./config.yaml
-#       - ${artifact}
+  - id: linuxbuild-arm-nfpms
+    ids:
+      - linuxbuild-arm
+    package_name: "ossign"
+    description: "ossign - A code signing tool"
+    vendor: "OSSign"
+    maintainer: OSSign <contact@ossign.org>
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}amd64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    formats:
+      - deb
+      - apk
+      - rpm
+    bindir: /usr/local/bin
+
+binary_signs:
+  - id: ossign
+    ids:
+      - winbuild
+    cmd: ossign
+    signature: "${artifact}"
+    args:
+      - "-o"
+      - ${artifact}
+      - "-t"
+      - "pecoff"
+      - ${artifact}
 
 release:
   github:
@@ -130,8 +158,8 @@ release:
 #       - ossign/ossign:{{ .Tag }}-linux-arm64
 
 uploads:
-  - name: "debpkg"
-    ids: ["ossign-linuxbuild-nfpms"]
+  - name: "debpkg-amd"
+    ids: ["linuxbuild-amd-nfpms"]
     method: "PUT"
     exts:
       - deb
@@ -141,9 +169,9 @@ uploads:
     custom_artifact_name: true
     
   
-  - name: "apkpkg"
+  - name: "apkpkg-amd"
     method: "PUT"
-    ids: ["ossign-linuxbuild-nfpms"]
+    ids: ["linuxbuild-amd-nfpms"]
     exts:
       - apk
     mode: archive
@@ -151,9 +179,9 @@ uploads:
     target: https://pkg.ossign.org/alpine/all/repository
     custom_artifact_name: true
   
-  - name: "rpmpkg"
+  - name: "rpmpkg-amd"
     method: "PUT"
-    ids: ["ossign-linuxbuild-nfpms"]
+    ids: ["linuxbuild-amd-nfpms"]
     exts:
       - rpm
     mode: archive
