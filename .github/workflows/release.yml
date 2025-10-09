@@ -47,9 +47,10 @@ jobs:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        UPLOAD_DEBPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_APKPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_RPMPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_DEBPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_DEBPKG-ARM_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_APKPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_RPMPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
         MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
         MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
         MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
@@ -62,12 +63,13 @@ jobs:
       if: ${{ github.ref_name == 'main' }}
       with:
         version: ${{ github.event.release.tag.name }}
-        args: build --snapshot --clean
+        args: release --snapshot --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        UPLOAD_DEBPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_APKPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_RPMPKG_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_DEBPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_DEBPKG-ARM_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_APKPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
+        UPLOAD_RPMPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
         MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
         MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
         MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
@@ -77,7 +79,6 @@ jobs:
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
-      if: ${{ github.ref_name != 'main' }}
       with:
         name: release
         path: dist/**

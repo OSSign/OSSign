@@ -11,7 +11,8 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd",
             "cwd": "${workspaceFolder}",
-            "args": [ "-c", "tst_exe_trust.json" ]
+            "args": [ "-t", "pecoff", "ossign.exe" ],
+            "envFile": "${workspaceFolder}/.secrets",
         }
     ]
 }

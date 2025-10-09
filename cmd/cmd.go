@@ -48,7 +48,7 @@ func initConfig() {
 			}
 			config = configBytes
 		} else {
-			log.Print("Using config from OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64 environment variable")
+			log.Print("Using config from OSSIGN_CONFIG environment variable")
 			config = []byte(os.Getenv("OSSIGN_CONFIG"))
 		}
 
