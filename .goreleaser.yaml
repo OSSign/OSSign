@@ -19,25 +19,25 @@ builds:
     goarch:
       - arm64
 
-  - id: macbuild
-    main: ./cmd/
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - darwin
-    goarch:
-      - amd64
-      - arm64
+  # - id: macbuild
+  #   main: ./cmd/
+  #   env:
+  #     - CGO_ENABLED=0
+  #   goos:
+  #     - darwin
+  #   goarch:
+  #     - amd64
+  #     - arm64
 
-  - id: winbuild
-    main: ./cmd/
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - windows
-    goarch:
-      - amd64
-      - arm64
+  # - id: winbuild
+  #   main: ./cmd/
+  #   env:
+  #     - CGO_ENABLED=0
+  #   goos:
+  #     - windows
+  #   goarch:
+  #     - amd64
+  #     - arm64
 
 archives:
   - formats: [ tar.gz, binary ]
@@ -100,40 +100,40 @@ nfpms:
       - rpm
     bindir: /usr/local/bin
 
-binary_signs:
-  - id: ossign
-    ids:
-      - winbuild
-    cmd: ossign
-    signature: "${artifact}"
-    args:
-      - "-o"
-      - ${artifact}
-      - "-t"
-      - "pecoff"
-      - ${artifact}
+# binary_signs:
+#   - id: ossign
+#     ids:
+#       - winbuild
+#     cmd: ossign
+#     signature: "${artifact}"
+#     args:
+#       - "-o"
+#       - ${artifact}
+#       - "-t"
+#       - "pecoff"
+#       - ${artifact}
 
-notarize:
-  macos:
-    - enabled: true
-      ids:
-        - macbuild
-      sign:
-        certificate: "{{ .Env.MACOS_SIGN_P12 }}"
-        password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
-        entitlements: ./entitlements.plist
+# notarize:
+#   macos:
+#     - enabled: true
+#       ids:
+#         - macbuild
+#       sign:
+#         certificate: "{{ .Env.MACOS_SIGN_P12 }}"
+#         password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
+#         entitlements: ./entitlements.plist
       
-      notarize:
-        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
-        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
-        key: "{{ .Env.MACOS_NOTARY_KEY }}"
-        wait: true
-        timeout: 20m
+#       notarize:
+#         issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
+#         key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
+#         key: "{{ .Env.MACOS_NOTARY_KEY }}"
+#         wait: true
+#         timeout: 20m
 
-release:
-  github:
-    owner: ossign
-    name: ossign
+# release:
+#   github:
+#     owner: ossign
+#     name: ossign
 
 uploads:
   - name: "debpkg-amd"
@@ -146,25 +146,25 @@ uploads:
     target: https://pkg.ossign.org/debian/pool/all/main/upload
     custom_artifact_name: true
   
-  - name: "apkpkg-amd"
-    method: "PUT"
-    ids: ["linuxbuild-amd-nfpms"]
-    exts:
-      - apk
-    mode: archive
-    username: "ossign-dev"
-    target: https://pkg.ossign.org/alpine/all/repository
-    custom_artifact_name: true
+  # - name: "apkpkg-amd"
+  #   method: "PUT"
+  #   ids: ["linuxbuild-amd-nfpms"]
+  #   exts:
+  #     - apk
+  #   mode: archive
+  #   username: "ossign-dev"
+  #   target: https://pkg.ossign.org/alpine/all/repository
+  #   custom_artifact_name: true
   
-  - name: "rpmpkg-amd"
-    method: "PUT"
-    ids: ["linuxbuild-amd-nfpms"]
-    exts:
-      - rpm
-    mode: archive
-    username: "ossign-dev"
-    target: https://pkg.ossign.org/rpm/upload
-    custom_artifact_name: true
+  # - name: "rpmpkg-amd"
+  #   method: "PUT"
+  #   ids: ["linuxbuild-amd-nfpms"]
+  #   exts:
+  #     - rpm
+  #   mode: archive
+  #   username: "ossign-dev"
+  #   target: https://pkg.ossign.org/rpm/upload
+  #   custom_artifact_name: true
 
   - name: "debpkg-arm"
     method: "PUT"
