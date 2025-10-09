@@ -36426,6 +36426,8 @@ async function run() {
         coreExports.error(resp.stderr);
     }
     if (installOnly) {
+        coreExports.info("install_only is set to true, skipping signing step");
+        coreExports.setOutput("finished", true);
         return;
     }
     const fileType = coreExports.getInput("fileType");

@@ -55,6 +55,8 @@ export async function run() {
     }
 
     if (installOnly) {
+        core.info("install_only is set to true, skipping signing step");
+        core.setOutput("finished", true);
         return;
     }
 
