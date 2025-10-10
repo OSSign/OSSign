@@ -1,5 +1,5 @@
-name: Sign File
-description: Sign files using the ossign tool
+name: OSSign Action
+description: Sign files using the ossign tool or install ossign for later use
 author: OSSign
 
 branding:
@@ -8,7 +8,7 @@ branding:
 
 inputs:
   token:
-    description: 'GitHub token with repo read access'
+    description: 'GitHub token with repo read access. Used to fetch the latest OSSign Binary'
     required: true
   
   installOnly:
@@ -18,7 +18,8 @@ inputs:
   
   config:
     description: 'The configuration for ossign (JSON)'
-    required: true
+    required: false
+    default: ''
   
   inputFiles:
     description: 'The files to sign (supports glob patterns)'
