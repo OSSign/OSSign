@@ -75,7 +75,12 @@ export async function run() {
         }
 
         const globber = await glob.create(inputFiles, globOptions);
-        for await (const file of globber.globGenerator()) {
+
+        const globs = await globber.glob();
+
+        core.info(`Found ${globs.length} file(s) to sign: ${globs.join(", ")}`);
+
+        for (const file of globs) {
             core.info(`Signing file: ${file}`);
 
             let signcmd = [ file, "-o", file ];
