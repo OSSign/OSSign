@@ -36,3 +36,6 @@ go.work.sum
 tst_*
 
 node_modules/
+
+dist/
+!action/dist/
