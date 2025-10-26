@@ -2,7 +2,8 @@ import * as core from "@actions/core";
 import { InstallOssign } from "./tool.ts";
 import * as fs from "fs/promises";
 import * as exec from "@actions/exec";
-import * as glob from "@actions/glob";
+//import * as glob from "@actions/glob";
+import { Glob } from "glob";
 
 async function InstallConfig() : Promise<string> {
     const config = core.getInput("config");
@@ -82,24 +83,40 @@ export async function run() {
             }
         }
         
-        const globOptions = {
-            followSymbolicLinks: false
-        };
+        // Replace GHA glob implementation because it stopped working on Windows
+        // see https://github.com/actions/toolkit/issues/2085
+        // const globOptions = {
+        //     followSymbolicLinks: false
+        // };
+
+        // var globs: string[] = [];
+
+
+        // try {
+
+        //     // const globber = await glob.create(inputFiles, globOptions);
+        //     globs = await globber.glob();
+        // } catch (error) {
+        //     core.setFailed(`Failed to process glob pattern(s) ${inputFiles}: ${error}`);
+        //     return;
+        // }
 
         var globs: string[] = [];
 
-
-        try {
-            const globber = await glob.create(inputFiles, globOptions);
-            globs = await globber.glob();
-        } catch (error) {
-            core.setFailed(`Failed to process glob pattern(s) ${inputFiles}: ${error}`);
-            return;
+        const splits = inputFiles.replaceAll("\r\n", "\n").split("\n");
+        for (const pattern of splits) {
+            if (pattern.trim() === "") {
+                continue;
+            }
+            core.info("Matching glob pattern: " + pattern);
+            globs.push(pattern);
         }
 
-        core.info(`Found ${globs.length} file(s) to sign: ${globs.join(", ")}`);
+        const globber = new Glob(globs, { follow: false });
 
-        for (const file of globs) {
+        // core.info(`Found ${globs.length} file(s) to sign: ${globs.join(", ")}`);
+
+        for (const file of globber) {
             core.info(`Signing file: ${file}`);
 
             let signcmd = [ file, "-o", file ];
