@@ -36439,8 +36439,17 @@ async function run() {
         const globOptions = {
             followSymbolicLinks: false
         };
-        const globber = await globExports.create(inputFiles, globOptions);
-        for await (const file of globber.globGenerator()) {
+        var globs = [];
+        try {
+            const globber = await globExports.create(inputFiles, globOptions);
+            globs = await globber.glob();
+        }
+        catch (error) {
+            coreExports.setFailed(`Failed to process glob pattern(s) ${inputFiles}: ${error}`);
+            return;
+        }
+        coreExports.info(`Found ${globs.length} file(s) to sign: ${globs.join(", ")}`);
+        for (const file of globs) {
             coreExports.info(`Signing file: ${file}`);
             let signcmd = [file, "-o", file];
             if (fileType.trim() !== "") {
