@@ -69,12 +69,25 @@ export async function run() {
     const inputFiles = core.getInput("inputFiles");
     if (inputFiles && inputFiles.trim() !== "") {
         core.info(`Signing multiple files according to glob pattern(s) `+ inputFiles);
+
+        if (core.isDebug()) {
+            core.debug("Debug logging is enabled");
+            core.debug("Working directory: " + process.cwd());
+            core.debug("Input files glob pattern: " + inputFiles);
+            core.debug("File type: " + fileType);
+            core.debug("Current dir file list:");
+            const dirFiles = await fs.readdir(process.cwd());
+            for (const f of dirFiles) {
+                core.debug(` - ${f}`);
+            }
+        }
         
         const globOptions = {
             followSymbolicLinks: false
-        }
+        };
 
         var globs: string[] = [];
+
 
         try {
             const globber = await glob.create(inputFiles, globOptions);

@@ -36436,6 +36436,17 @@ async function run() {
     const inputFiles = coreExports.getInput("inputFiles");
     if (inputFiles && inputFiles.trim() !== "") {
         coreExports.info(`Signing multiple files according to glob pattern(s) ` + inputFiles);
+        if (coreExports.isDebug()) {
+            coreExports.debug("Debug logging is enabled");
+            coreExports.debug("Working directory: " + process.cwd());
+            coreExports.debug("Input files glob pattern: " + inputFiles);
+            coreExports.debug("File type: " + fileType);
+            coreExports.debug("Current dir file list:");
+            const dirFiles = await fs.readdir(process.cwd());
+            for (const f of dirFiles) {
+                coreExports.debug(` - ${f}`);
+            }
+        }
         const globOptions = {
             followSymbolicLinks: false
         };
