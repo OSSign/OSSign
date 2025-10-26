@@ -74,9 +74,15 @@ export async function run() {
             followSymbolicLinks: false
         }
 
-        const globber = await glob.create(inputFiles, globOptions);
+        var globs: string[] = [];
 
-        const globs = await globber.glob();
+        try {
+            const globber = await glob.create(inputFiles, globOptions);
+            globs = await globber.glob();
+        } catch (error) {
+            core.setFailed(`Failed to process glob pattern(s) ${inputFiles}: ${error}`);
+            return;
+        }
 
         core.info(`Found ${globs.length} file(s) to sign: ${globs.join(", ")}`);
 
