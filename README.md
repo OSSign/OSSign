@@ -12,7 +12,7 @@ An easy to use CLI code signing tool based on [Relic](https://github.com/sassoft
 - Interfaces
   - [x] Local Certificate
   - [x] Azure Key Vault
-  - [ ] Azure Trusted Signing
+  - [x] Azure Trusted Signing
 - Compatibility
   - [x] Windows
   - [x] Linux
