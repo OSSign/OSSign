@@ -50,7 +50,7 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
         }
 
         core.addPath(cachePath);
-        return cachePath;
+        return process.platform == "win32" ? `ossign.exe` : `ossign`;
     }
 
     const tempDir = fs.mkdtempSync(`${os.tmpdir()}/${process.platform}-${process.arch}-`);
