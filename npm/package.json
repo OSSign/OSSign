@@ -1,0 +1,36 @@
+{
+  "name": "ossign-js",
+  "version": "1.0.0",
+  "description": "JS/TS library for using the OSSign Tool",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test-js": "node tests/js.js",
+    "test-ts": "ts-node tests/ts.ts",
+    "test": "npm run build && npm run test-js && npm run test-ts"
+  },
+  "keywords": [
+    "ossign",
+    "signing",
+    "code-signing"
+  ],
+  "author": "OSSign Contributors",
+  "license": "AGPL-3.0-only",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@actions/core": "^2.0.3",
+    "@actions/tool-cache": "^3.0.1",
+    "deasync": "^0.1.31"
+  }
+}

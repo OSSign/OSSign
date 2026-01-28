@@ -18,20 +18,6 @@ jobs:
       with:
         go-version: 1.25.0
         cache-dependency-path: go.mod
-
-    # - name: Login to ghcr.io
-    #   uses: docker/login-action@v2
-    #   with:
-    #     registry: ghcr.io
-    #     username: ossign
-    #     password: ${{ secrets.GITHUB_TOKEN }}
-    
-    # - name: Login to docker hub
-    #   uses: docker/login-action@v2
-    #   with:
-    #     registry: docker.io
-    #     username: ossign
-    #     password: ${{ secrets.DOCKER_HUB_TOKEN }}
     
     - name: Setup OSSign
       uses: ossign/actions/setup-ossign@main

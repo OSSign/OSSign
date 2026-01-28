@@ -1,9 +1,9 @@
 # dependencies (bun install)
-node_modules
+node_modules/
 
 # output
 out
-dist
+dist/
 *.tgz
 
 # code coverage
@@ -14,6 +14,8 @@ coverage
 logs
 _.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+*.log
+
 
 # dotenv environment variable files
 .env
@@ -32,3 +34,14 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Example files
+examples/downloads/
+examples/downloads-js/
+examples/*.txt
+examples/*.json
+
+tests/downloads/
+tests/downloads-js/
+tests/*.txt
+tests/*.json
