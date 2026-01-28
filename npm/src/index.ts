@@ -22,6 +22,13 @@ async function Sign(file: string, outFile: string = "", type: string = "pecoff",
     } else {
         logger('Downloading ossign binary for signing');
         toolPath = await DownloadBinary();
+
+        if (ossignInPath()) {
+            logger('Using ossign from PATH after download');
+            toolPath = process.platform == "win32" ? "ossign.exe" : "ossign";
+        } else {
+            logger(`Using downloaded ossign binary at ${toolPath}`);
+        }
     }
 
     const params: SigningParameters = {
