@@ -4,7 +4,7 @@ import * as core from "@actions/core";
 import * as toolcache from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as os from 'os';
-import * as http from 'http';
+import * as https from 'https';
 
 export function ossignInPath(): boolean {
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
@@ -107,7 +107,7 @@ export function DownloadBinarySync(version: string = "latest"): string {
 
     logger(`Downloading ${binary} to temporary path ${targetPath}...`);
 
-    const download = http.request(url, (response) => {
+    const download = https.request(url, (response) => {
         const file = fs.createWriteStream(targetPath);
         response.pipe(file);
         file.on('finish', () => {
