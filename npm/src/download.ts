@@ -5,6 +5,7 @@ import * as toolcache from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as https from 'https';
+import { awaitSync } from '@kaciras/deasync';
 
 export function ossignInPath(): boolean {
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
@@ -85,6 +86,22 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     return downloadPath;
 }
 
+function download(url: string, targetPath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(targetPath, { mode: 0o755 });
+        https.get(url, (response) => {
+            response.pipe(file);
+            file.on('finish', () => {
+                file.close();
+                resolve(targetPath);
+            });
+        }).on('error', (err) => {
+            fs.unlinkSync(targetPath);
+            reject(err);
+        });
+    });
+}
+
 export function DownloadBinarySync(version: string = "latest"): string {
     const binary = getToolName();
     const url = getToolUrl(version);
@@ -107,23 +124,9 @@ export function DownloadBinarySync(version: string = "latest"): string {
 
     logger(`Downloading ${binary} to temporary path ${targetPath}...`);
 
-    const download = https.request(url, (response) => {
-        const file = fs.createWriteStream(targetPath);
-        response.pipe(file);
-        file.on('finish', () => {
-            file.close();
-        });
-    });
 
-    download.on('error', (err) => {
-        fs.unlinkSync(targetPath);
-        throw new Error(`Failed to download ${binary}: ${err.message}`);
-    });
-
-    download.end();
-
-    const downloadPath = targetPath;
-
+    const downloadPath = awaitSync(download(url, targetPath));
+    
     if (process.platform !== "win32") {
         fs.chmodSync(downloadPath, 0o755);
     }
