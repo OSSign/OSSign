@@ -86,5 +86,65 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
 }
 
 export function DownloadBinarySync(version: string = "latest"): string {
-    return awaitSync(DownloadBinary(version));
+    const binary = getToolName();
+    const url = getToolUrl(version);
+
+    logger(`Downloading binary from ${url}`);
+
+    if (isGithubActions()) {
+        const inCache = toolcache.find(binary, version, process.arch);
+        if (inCache) {
+            logger(`Found ${binary} in cache at ${inCache}`);
+            core.addPath(inCache);
+            return inCache;
+        }
+
+
+        logger(`Downloading ${binary} from ${url}...`);
+        const downloadPath = awaitSync(toolcache.downloadTool(url));
+        if (!downloadPath) {
+            throw new Error(`Failed to download ${binary}`);
+        }
+
+        const cachePath = awaitSync(toolcache.cacheFile(downloadPath, process.platform == "win32" ? "ossign.exe" : "ossign", binary, version, process.arch));
+        if (!cachePath) {
+            throw new Error(`Failed to cache ${binary}`);
+        }
+
+        if (process.platform !== "win32") {
+            fs.chmodSync(`${cachePath}/ossign`, 0o755);
+        }
+
+        core.addPath(cachePath);
+        return process.platform == "win32" ? `ossign.exe` : `ossign`;
+    }
+
+    // Get year-month-day string for unique temp dir
+    const dayMonthYear = new Date().toISOString().split('T')[0];
+    
+    const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
+    fs.mkdirSync(tempDir, { recursive: true });
+    
+    const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
+
+    // If target path exists, success
+    if (fs.existsSync(targetPath)) {
+        logger(`${binary} already exists at ${targetPath}`);
+        return targetPath;
+    }
+
+    logger(`Downloading ${binary} to temporary path ${targetPath}...`);
+
+    const downloadPath = awaitSync(toolcache.downloadTool(url, targetPath));
+    if (!downloadPath) {
+        throw new Error(`Failed to download ${binary}`);
+    }
+
+    if (process.platform !== "win32") {
+        fs.chmodSync(downloadPath, 0o755);
+    }
+
+    logger(`${binary} downloaded to ${downloadPath}`);
+
+    return downloadPath;
 }
