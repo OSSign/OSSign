@@ -5,7 +5,10 @@ import * as toolcache from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as https from 'https';
-import { awaitSync } from '@kaciras/deasync';
+// import { awaitSync } from '@kaciras/deasync';
+// import { createWorker } from 'await-sync';
+// import { runAsWorker } from 'synckit';
+import * as deasync from 'deasync';
 
 export function ossignInPath(): boolean {
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
@@ -86,52 +89,62 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     return downloadPath;
 }
 
-function download(url: string, targetPath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(targetPath, { mode: 0o755 });
-        https.get(url, (response) => {
-            response.pipe(file);
-            file.on('finish', () => {
-                file.close();
-                resolve(targetPath);
-            });
-        }).on('error', (err) => {
-            fs.unlinkSync(targetPath);
-            reject(err);
-        });
-    });
-}
+export const DownloadBinarySync = deasync.default(DownloadBinary);
 
-export function DownloadBinarySync(version: string = "latest"): string {
-    const binary = getToolName();
-    const url = getToolUrl(version);
+// export const DownloadBinarySync = createSyncFn(DownloadBinary, {
+//     tsRunner: 'tsx'
+// });
 
-    logger(`Downloading binary from ${url}`);
+// export function DownloadBinarySync(version: string = "latest"): string {
+//     return awaitSync(DownloadBinary(version));
+// }
 
-    // Get year-month-day string for unique temp dir
-    const dayMonthYear = new Date().toISOString().split('T')[0];
+// function download(url: string, targetPath: string): Promise<string> {
+//     return new Promise((resolve, reject) => {
+//         const file = fs.createWriteStream(targetPath, { mode: 0o755 });
+//         https.get(url, (response) => {
+//             response.pipe(file);
+//             file.on('finish', () => {
+//                 file.close();
+//                 resolve(targetPath);
+//             });
+//         }).on('error', (err) => {
+//             fs.unlinkSync(targetPath);
+//             reject(err);
+//         });
+//     });
+// }
+
+// export function DownloadBinarySync(version: string = "latest"): string {
+//     const binary = getToolName();
+//     const url = getToolUrl(version);
+
+//     logger(`Downloading binary from ${url}`);
+
+//     // Get year-month-day string for unique temp dir
+//     const dayMonthYear = new Date().toISOString().split('T')[0];
     
-    const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
-    fs.mkdirSync(tempDir, { recursive: true });
+//     const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
+//     fs.mkdirSync(tempDir, { recursive: true });
     
-    const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
+//     const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
 
-    // If target path exists, success
-    if (fs.existsSync(targetPath)) {
-        logger(`${binary} already exists at ${targetPath}`);
-        return targetPath;
-    }
+//     // If target path exists, success
+//     if (fs.existsSync(targetPath)) {
+//         logger(`${binary} already exists at ${targetPath}`);
+//         return targetPath;
+//     }
 
-    logger(`Downloading ${binary} to temporary path ${targetPath}...`);
+//     logger(`Downloading ${binary} to temporary path ${targetPath}...`);
 
 
-    const downloadPath = awaitSync(download(url, targetPath));
+//     const downloadPath = awaitSync(download(url, targetPath));
     
-    if (process.platform !== "win32") {
-        fs.chmodSync(downloadPath, 0o755);
-    }
+//     if (process.platform !== "win32") {
+//         fs.chmodSync(downloadPath, 0o755);
+//     }
 
-    logger(`${binary} downloaded to ${downloadPath}`);
+//     logger(`${binary} downloaded to ${downloadPath}`);
 
-    return downloadPath;
-}
+//     return downloadPath;
+// }

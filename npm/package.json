@@ -37,6 +37,8 @@
     "@actions/core": "^2.0.3",
     "@actions/tool-cache": "^3.0.1",
     "@kaciras/deasync": "^1.1.0",
-    "deasync": "^0.1.31"
+    "await-sync": "^1.0.3",
+    "deasync": "^0.1.31",
+    "synckit": "^0.11.12"
   }
 }
