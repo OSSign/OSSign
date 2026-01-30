@@ -4,6 +4,7 @@ import * as core from "@actions/core";
 import * as toolcache from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as os from 'os';
+import { awaitSync } from '@kaciras/deasync';
 
 export function ossignInPath(): boolean {
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
@@ -34,6 +35,7 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
             return inCache;
         }
 
+
         logger(`Downloading ${binary} from ${url}...`);
         const downloadPath = await toolcache.downloadTool(url);
         if (!downloadPath) {
@@ -53,8 +55,19 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
         return process.platform == "win32" ? `ossign.exe` : `ossign`;
     }
 
-    const tempDir = fs.mkdtempSync(`${os.tmpdir()}/${process.platform}-${process.arch}-`);
+    // Get year-month-day string for unique temp dir
+    const dayMonthYear = new Date().toISOString().split('T')[0];
+    
+    const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
+    fs.mkdirSync(tempDir, { recursive: true });
+    
     const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
+
+    // If target path exists, success
+    if (fs.existsSync(targetPath)) {
+        logger(`${binary} already exists at ${targetPath}`);
+        return targetPath;
+    }
 
     logger(`Downloading ${binary} to temporary path ${targetPath}...`);
 
@@ -72,29 +85,6 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     return downloadPath;
 }
 
-function deasync<T>(promise: Promise<T>): T {
-    let isDone = false;
-    let result: T;
-    let error: any;
-
-    promise.then(res => {
-        result = res;
-        isDone = true;
-    }).catch(err => {
-        error = err;
-        isDone = true;
-    });
-
-    // Block the event loop until the promise is resolved
-    require('deasync').loopWhile(() => !isDone);
-
-    if (error) {
-        throw error;
-    }
-
-    return result!;
-}
-
 export function DownloadBinarySync(version: string = "latest"): string {
-    return deasync(DownloadBinary(version));
+    return awaitSync(DownloadBinary(version));
 }

@@ -28,7 +28,7 @@ async function runExamples() {
 
   await fs.writeFile(configFile, config);
 
-  console.log(await ossign.Sign(psFile, psFile, "powershell", configFile));
+  console.log(ossign.SignSync(psFile, psFile, "powershell", configFile));
 
   const content = await fs.readFile(psFile, 'utf8');
   console.log('\\nSigned PowerShell file content:\\n', content);

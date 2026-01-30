@@ -1,9 +1,13 @@
 {
-  "name": "ossign-js",
-  "version": "1.0.0",
+  "name": "@ossign/ossign",
+  "version": "1.0.1",
   "description": "JS/TS library for using the OSSign Tool",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ossign/ossign.git"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
@@ -24,6 +28,7 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@types/deasync": "^0.1.5",
     "@types/node": "^20.19.30",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
@@ -31,6 +36,7 @@
   "dependencies": {
     "@actions/core": "^2.0.3",
     "@actions/tool-cache": "^3.0.1",
+    "@kaciras/deasync": "^1.1.0",
     "deasync": "^0.1.31"
   }
 }

@@ -1,5 +1,5 @@
 // TypeScript Example
-import { Sign, GetSignerFunctionSync } from '../dist/index';
+import { Sign, SignSync, GetSignerFunctionSync } from '../dist/index';
 import { readFile, writeFile, unlink } from 'fs/promises';
 import { join as pjoin } from 'path';
 
@@ -30,7 +30,7 @@ async function runExamples() {
   console.log(await Sign(psFile, psFile, "powershell", configFile));
   
   const content = await readFile(psFile, 'utf8');
-  console.log('\\nSigned PowerShell file content:\\n', content);
+  // console.log('\\nSigned PowerShell file content:\\n', content);
 
   if (content.includes('SIG # Begin signature block')) {
     console.log('✓ PowerShell file signed successfully');
@@ -43,13 +43,16 @@ async function runExamples() {
   console.log(signFunc(psFile2));
 
   const content2 = await readFile(psFile2, 'utf8');
-  console.log('\\nSigned PowerShell file 2 content:\\n', content2);
+  // console.log('\\nSigned PowerShell file 2 content:\\n', content2);
 
   if (content2.includes('SIG # Begin signature block')) {
     console.log('✓ PowerShell file 2 signed successfully');
   } else {
     console.error('✗ PowerShell file 2 signing failed');
   }
+
+
+  return;
 }
 
 // Run examples
