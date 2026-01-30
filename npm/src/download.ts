@@ -4,7 +4,7 @@ import * as core from "@actions/core";
 import * as toolcache from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as os from 'os';
-import { awaitSync } from '@kaciras/deasync';
+import * as http from 'http';
 
 export function ossignInPath(): boolean {
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
@@ -91,34 +91,6 @@ export function DownloadBinarySync(version: string = "latest"): string {
 
     logger(`Downloading binary from ${url}`);
 
-    if (isGithubActions()) {
-        const inCache = toolcache.find(binary, version, process.arch);
-        if (inCache) {
-            logger(`Found ${binary} in cache at ${inCache}`);
-            core.addPath(inCache);
-            return inCache;
-        }
-
-
-        logger(`Downloading ${binary} from ${url}...`);
-        const downloadPath = awaitSync(toolcache.downloadTool(url));
-        if (!downloadPath) {
-            throw new Error(`Failed to download ${binary}`);
-        }
-
-        const cachePath = awaitSync(toolcache.cacheFile(downloadPath, process.platform == "win32" ? "ossign.exe" : "ossign", binary, version, process.arch));
-        if (!cachePath) {
-            throw new Error(`Failed to cache ${binary}`);
-        }
-
-        if (process.platform !== "win32") {
-            fs.chmodSync(`${cachePath}/ossign`, 0o755);
-        }
-
-        core.addPath(cachePath);
-        return process.platform == "win32" ? `ossign.exe` : `ossign`;
-    }
-
     // Get year-month-day string for unique temp dir
     const dayMonthYear = new Date().toISOString().split('T')[0];
     
@@ -135,10 +107,22 @@ export function DownloadBinarySync(version: string = "latest"): string {
 
     logger(`Downloading ${binary} to temporary path ${targetPath}...`);
 
-    const downloadPath = awaitSync(toolcache.downloadTool(url, targetPath));
-    if (!downloadPath) {
-        throw new Error(`Failed to download ${binary}`);
-    }
+    const download = http.request(url, (response) => {
+        const file = fs.createWriteStream(targetPath);
+        response.pipe(file);
+        file.on('finish', () => {
+            file.close();
+        });
+    });
+
+    download.on('error', (err) => {
+        fs.unlinkSync(targetPath);
+        throw new Error(`Failed to download ${binary}: ${err.message}`);
+    });
+
+    download.end();
+
+    const downloadPath = targetPath;
 
     if (process.platform !== "win32") {
         fs.chmodSync(downloadPath, 0o755);
