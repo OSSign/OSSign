@@ -89,7 +89,7 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     return downloadPath;
 }
 
-export const DownloadBinarySync = require('deasync')(DownloadBinary) as (version?: string) => string;
+export const DownloadBinarySync = require('deasync')(DownloadBinary);
 
 // export const DownloadBinarySync = createSyncFn(DownloadBinary, {
 //     tsRunner: 'tsx'
