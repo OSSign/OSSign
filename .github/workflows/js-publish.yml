@@ -31,7 +31,7 @@ jobs:
 
       - name: Update version if specified
         working-directory: npm
-        run: npm version from-git
+        run: npm version ${{ github.ref_name }} --no-git-tag-version
 
       - name: Publish to NPM
         working-directory: npm
