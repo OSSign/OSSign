@@ -5,10 +5,8 @@ import * as toolcache from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as https from 'https';
-// import { awaitSync } from '@kaciras/deasync';
-// import { createWorker } from 'await-sync';
-// import { runAsWorker } from 'synckit';
-import * as deasync from 'deasync';
+
+
 
 export function ossignInPath(): boolean {
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
@@ -26,10 +24,16 @@ export function ossignInPath(): boolean {
 
 
 export async function DownloadBinary(version: string = "latest"): Promise<string> {
+    if (ossignInPath()) {
+        logger('Using ossign from PATH');
+        return process.platform == "win32" ? "ossign.exe" : "ossign";
+    }
+
     const binary = getToolName();
     const url = getToolUrl(version);
 
     logger(`Downloading binary from ${url}`);
+    console.log(process.versions.modules.toString());
 
     if (isGithubActions()) {
         const inCache = toolcache.find(binary, version, process.arch);
@@ -89,31 +93,6 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     return downloadPath;
 }
 
-export const DownloadBinarySync = require('deasync')(DownloadBinary);
-
-// export const DownloadBinarySync = createSyncFn(DownloadBinary, {
-//     tsRunner: 'tsx'
-// });
-
-// export function DownloadBinarySync(version: string = "latest"): string {
-//     return awaitSync(DownloadBinary(version));
-// }
-
-// function download(url: string, targetPath: string): Promise<string> {
-//     return new Promise((resolve, reject) => {
-//         const file = fs.createWriteStream(targetPath, { mode: 0o755 });
-//         https.get(url, (response) => {
-//             response.pipe(file);
-//             file.on('finish', () => {
-//                 file.close();
-//                 resolve(targetPath);
-//             });
-//         }).on('error', (err) => {
-//             fs.unlinkSync(targetPath);
-//             reject(err);
-//         });
-//     });
-// }
 
 // export function DownloadBinarySync(version: string = "latest"): string {
 //     const binary = getToolName();

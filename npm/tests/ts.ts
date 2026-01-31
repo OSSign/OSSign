@@ -1,9 +1,9 @@
 // TypeScript Example
-import { Sign, SignSync, GetSignerFunctionSync } from '../dist/index';
+import { Sign, GetSignerFunction } from '../dist/index';
 import { readFile, writeFile, unlink } from 'fs/promises';
 import { join as pjoin } from 'path';
 
-const syncFile = pjoin(__dirname, 'example-sync.ps1');
+// const syncFile = pjoin(__dirname, 'example-sync.ps1');
 const asyncFile = pjoin(__dirname, 'example-async.ps1');
 const getFuncFile = pjoin(__dirname, 'example-getfunc.ps1');
 const configFile = pjoin(__dirname, 'ossign-config-js.json');
@@ -21,25 +21,25 @@ const config = `{
 
 
 async function runExamples() {
-  console.log('=== OSSign-JS JavaScript Tests ===\\n');
+  console.log('=== OSSign-TS TypeScript Tests ===\\n');
 
-  await writeFile(syncFile, 'Write-Host "Hello, OSSign Sync!"');
+  // await writeFile(syncFile, 'Write-Host "Hello, OSSign Sync!"');
   await writeFile(asyncFile, 'Write-Host "Hello, OSSign Async!"');
   await writeFile(getFuncFile, 'Write-Host "Hello, OSSign GetFunc!"');
   await writeFile(configFile, config);
 
-  console.log('--- SignSync Example ---');
-  console.log(SignSync(syncFile, syncFile, "powershell", configFile));
+  // console.log('--- SignSync Example ---');
+  // console.log(SignSync(syncFile, syncFile, "powershell", configFile));
 
-  const contentSync = await readFile(syncFile, 'utf8');
-  // console.log('\\nSigned PowerShell file content:\\n', contentSync);
+  // const contentSync = await readFile(syncFile, 'utf8');
+  // // console.log('\\nSigned PowerShell file content:\\n', contentSync);
 
-  if (contentSync.includes('SIG # Begin signature block')) {
-    console.log('✓ PowerShell file signed successfully (Sync)');
-  } else {
-    console.error('✗ PowerShell file signing failed (Sync)');
-    return;
-  }
+  // if (contentSync.includes('SIG # Begin signature block')) {
+  //   console.log('✓ PowerShell file signed successfully (Sync)');
+  // } else {
+  //   console.error('✗ PowerShell file signing failed (Sync)');
+  //   return;
+  // }
 
   console.log('\\n--- Async Sign Example ---');
   console.log(await Sign(asyncFile, asyncFile, "powershell", configFile));
@@ -55,8 +55,8 @@ async function runExamples() {
   }
 
   console.log('\\n--- GetSignerFunctionSync Example ---');
-  const signFunc = GetSignerFunctionSync("powershell", configFile);
-  console.log(signFunc(getFuncFile));
+  const signFunc = GetSignerFunction("powershell", configFile);
+  console.log(await signFunc(getFuncFile));
 
   const contentGetFunc = await readFile(getFuncFile, 'utf8');
   // console.log('\\nSigned PowerShell file content:\\n', contentGetFunc);
@@ -73,7 +73,7 @@ async function runExamples() {
 
 // Run examples
 runExamples().catch(console.error).finally(() => {
-  unlink(syncFile);
+  // unlink(syncFile);
   unlink(asyncFile);
   unlink(getFuncFile);
   unlink(configFile);
