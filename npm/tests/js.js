@@ -3,7 +3,7 @@ const ossign = require('../dist/index');
 const fs = require('fs/promises');
 const path = require('path');
 
-// const syncFile = path.join(__dirname, 'example-sync.ps1');
+const syncFile = path.join(__dirname, 'example-sync.ps1');
 const asyncFile = path.join(__dirname, 'example-async.ps1');
 const getFuncFile = path.join(__dirname, 'example-getfunc.ps1');
 const configFile = path.join(__dirname, 'ossign-config-js.json');
@@ -23,24 +23,24 @@ const config = `{
 async function runExamples() {
   console.log('=== OSSign-JS JavaScript Tests ===\\n');
 
-  // await fs.writeFile(syncFile, 'Write-Host "Hello, OSSign Sync!"');
+  await fs.writeFile(syncFile, 'Write-Host "Hello, OSSign Sync!"');
   await fs.writeFile(asyncFile, 'Write-Host "Hello, OSSign Async!"');
   await fs.writeFile(getFuncFile, 'Write-Host "Hello, OSSign GetFunc!"');
   await fs.writeFile(configFile, config);
 
 
-  // console.log("-- Synchronous Signing --");
-  // console.log(ossign.SignSync(syncFile, syncFile, "powershell", configFile));
+  console.log("-- Synchronous Signing --");
+  console.log(ossign.SignSync(syncFile, syncFile, "powershell", configFile));
 
-  // let content = await fs.readFile(syncFile, 'utf8');
-  // console.log('\\nSigned PowerShell file content:\\n', content);
+  let content = await fs.readFile(syncFile, 'utf8');
+  console.log('\\nSigned PowerShell file content:\\n', content);
 
-  // if (content.includes('SIG # Begin signature block')) {
-  //   console.log('✓ Synchronous signing successful');
-  // } else {
-  //   console.error('✗ Synchronous signing failed');
-  //   return;
-  // }
+  if (content.includes('SIG # Begin signature block')) {
+    console.log('✓ Synchronous signing successful');
+  } else {
+    console.error('✗ Synchronous signing failed');
+    return;
+  }
 
   console.log('\\n-- Asynchronous Signing --');
   const asyncResult = await ossign.Sign(asyncFile, asyncFile, "powershell", configFile);
@@ -72,13 +72,12 @@ async function runExamples() {
   }
 
 
-
   console.log('\\n=== End of OSSign-JS JavaScript Tests ===');
 }
 
 // Run examples
 runExamples().catch(console.error).finally(() => {
-  // fs.unlink(syncFile);
+  fs.unlink(syncFile);
   fs.unlink(asyncFile);
   fs.unlink(getFuncFile);
   fs.unlink(configFile);

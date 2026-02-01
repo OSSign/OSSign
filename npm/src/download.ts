@@ -9,6 +9,7 @@ import * as https from 'https';
 
 
 export function ossignInPath(): boolean {
+    return false;
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
     const whichCmd = process.platform == "win32" ? "where.exe" : "which";
     
@@ -94,36 +95,52 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
 }
 
 
-// export function DownloadBinarySync(version: string = "latest"): string {
-//     const binary = getToolName();
-//     const url = getToolUrl(version);
+export function DownloadBinarySync(version: string = "latest"): string {
+    if (ossignInPath()) {
+        logger('Using ossign from PATH');
+        return process.platform == "win32" ? "ossign.exe" : "ossign";
+    }
 
-//     logger(`Downloading binary from ${url}`);
+    const binary = getToolName();
+    const url = getToolUrl(version);
 
-//     // Get year-month-day string for unique temp dir
-//     const dayMonthYear = new Date().toISOString().split('T')[0];
+    logger(`Downloading binary from ${url}`);
+
+    // Get year-month-day string for unique temp dir
+    const dayMonthYear = new Date().toISOString().split('T')[0];
     
-//     const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
-//     fs.mkdirSync(tempDir, { recursive: true });
+    const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
+    fs.mkdirSync(tempDir, { recursive: true });
     
-//     const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
+    const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
 
-//     // If target path exists, success
-//     if (fs.existsSync(targetPath)) {
-//         logger(`${binary} already exists at ${targetPath}`);
-//         return targetPath;
-//     }
+    // If target path exists, success
+    if (fs.existsSync(targetPath)) {
+        logger(`${binary} already exists at ${targetPath}`);
+        return targetPath;
+    }
 
-//     logger(`Downloading ${binary} to temporary path ${targetPath}...`);
+    logger(`Downloading ${binary} to temporary path ${targetPath}...`);
 
-
-//     const downloadPath = awaitSync(download(url, targetPath));
+    try {
+        logger("Trying to use curl to download the binary...");
+        execSync(`curl -L "${url}" -o "${targetPath}" && chmod +x "${targetPath}"`, { stdio: 'inherit' });
+        logger(`Downloaded ${binary} to ${targetPath} using curl.`);
+    } catch (error) {
+        logger("Curl failed, trying wget...");
+        try {
+            execSync(`wget "${url}" -O "${targetPath}" && chmod +x "${targetPath}"`, { stdio: 'inherit' });
+            logger(`Downloaded ${binary} to ${targetPath} using wget.`);
+        } catch (error) {
+            logger("Wget also failed. Trying powershell Invoke-WebRequest...");
+            try {
+                execSync(`powershell -Command "Invoke-WebRequest -Uri '${url}' -OutFile '${targetPath}'"`, { stdio: 'inherit' });
+                logger(`Downloaded ${binary} to ${targetPath} using powershell Invoke-WebRequest.`);
+            } catch (error) {
+                throw new Error(`Failed to download ${binary} using curl, wget, and powershell Invoke-WebRequest.`);
+            }
+        }
+    }
     
-//     if (process.platform !== "win32") {
-//         fs.chmodSync(downloadPath, 0o755);
-//     }
-
-//     logger(`${binary} downloaded to ${downloadPath}`);
-
-//     return downloadPath;
-// }
+    return targetPath;
+}
