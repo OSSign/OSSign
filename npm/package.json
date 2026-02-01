@@ -1,6 +1,6 @@
 {
   "name": "@ossign/ossign",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "JS/TS library for using the OSSign Tool",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,10 +35,6 @@
   },
   "dependencies": {
     "@actions/core": "^2.0.3",
-    "@actions/tool-cache": "^3.0.1",
-    "@kaciras/deasync": "^1.1.0",
-    "await-sync": "^1.0.3",
-    "deasync": "^0.1.31",
-    "synckit": "^0.11.12"
+    "@actions/tool-cache": "^3.0.1"
   }
 }
