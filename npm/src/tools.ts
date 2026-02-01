@@ -12,7 +12,7 @@ export function winpath(path: string): string {
     if (process.platform === "win32") {
         return path.replace(/\//g, "\\");
     }
-    
+
     return path;
 }
 
@@ -33,7 +33,10 @@ export function logger(message: string, level: "info" | "warning" | "error" = "i
 }
 
 export function getToolName(): string {
-    const platform = process.platform.substring(0, 1).toUpperCase() + process.platform.substring(1);
+    let platform = process.platform.substring(0, 1).toUpperCase() + process.platform.substring(1);
+    if (platform === "Win32") {
+        platform = "Windows"
+    }
     const arch = process.arch == "arm64" ? "arm64" : "x86_64";
     let suffix = "";
     

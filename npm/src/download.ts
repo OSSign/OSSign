@@ -66,7 +66,7 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     // Get year-month-day string for unique temp dir
     const dayMonthYear = new Date().toISOString().split('T')[0];
     
-    const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
+    const tempDir = `${os.tmpdir()}/${getToolName()}-${dayMonthYear}`
     fs.mkdirSync(tempDir, { recursive: true });
     
     const targetPath = winpath(`${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`);
@@ -108,7 +108,7 @@ export function DownloadBinarySync(version: string = "latest"): string {
     // Get year-month-day string for unique temp dir
     const dayMonthYear = new Date().toISOString().split('T')[0];
     
-    const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
+    const tempDir = `${os.tmpdir()}/${getToolName()}-${dayMonthYear}`
     fs.mkdirSync(tempDir, { recursive: true });
     
     const targetPath = winpath(`${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`);
