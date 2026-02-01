@@ -1,4 +1,4 @@
-import { getToolName, getToolUrl, isGithubActions, logger } from './tools';
+import { getToolName, getToolUrl, isGithubActions, logger, winpath } from './tools';
 import { execSync } from 'child_process';
 import * as core from "@actions/core";
 import * as toolcache from '@actions/tool-cache';
@@ -69,7 +69,7 @@ export async function DownloadBinary(version: string = "latest"): Promise<string
     const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
     fs.mkdirSync(tempDir, { recursive: true });
     
-    const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
+    const targetPath = winpath(`${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`);
 
     // If target path exists, success
     if (fs.existsSync(targetPath)) {
@@ -111,7 +111,7 @@ export function DownloadBinarySync(version: string = "latest"): string {
     const tempDir = `${os.tmpdir()}/ossign-${process.platform}-${process.arch}-${dayMonthYear}`
     fs.mkdirSync(tempDir, { recursive: true });
     
-    const targetPath = `${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`;
+    const targetPath = winpath(`${tempDir}/${process.platform == "win32" ? "ossign.exe" : "ossign"}`);
 
     // If target path exists, success
     if (fs.existsSync(targetPath)) {

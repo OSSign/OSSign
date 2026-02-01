@@ -1,4 +1,5 @@
 import * as child_process from 'child_process';
+import { winpath } from './tools';
 
 export type SigningParameters = {
     binaryPath?: string;
@@ -28,14 +29,14 @@ export function Exec(params: SigningParameters): string {
     }
 
     if (params.outputFile) {
-        paramsList.push('-o', params.outputFile);
+        paramsList.push('-o', winpath(params.outputFile));
     }
 
     if (params.configFile) {
-        paramsList.push('-c', params.configFile);
+        paramsList.push('-c', winpath(params.configFile));
     }
 
-    paramsList.push(params.inputFile);
+    paramsList.push(winpath(params.inputFile));
 
     const binaryPath = params.binaryPath || ( process.platform === 'win32' ? 'ossign.exe' : 'ossign');
     console.log(`Executing command: ${binaryPath} ${paramsList.join(' ')}`);

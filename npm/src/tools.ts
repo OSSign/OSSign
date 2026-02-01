@@ -8,6 +8,14 @@ export function isGithubActions(): boolean {
     return process.env.GITHUB_ACTIONS !== undefined;
 }
 
+export function winpath(path: string): string {
+    if (process.platform === "win32") {
+        return path.replace(/\//g, "\\");
+    }
+    
+    return path;
+}
+
 export function logger(message: string, level: "info" | "warning" | "error" = "info"): void {
     switch (level) {
         case "info":

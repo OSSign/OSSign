@@ -46,8 +46,8 @@ async function Sign(file: string, outFile: string = "", type: string = "pecoff",
 }
 
 function GetSignerFunction(type: string = "pecoff", configPath: string = "") {
-    return async (file: string) => {
-        return await Sign(file, file, type, configPath);
+    return async (path: string) => {
+        return await Sign(path, path, type, configPath);
     }
 }
 
@@ -94,8 +94,8 @@ function SignSync(file: string, outFile: string = "", type: string = "pecoff", c
 }
 
 function GetSignerFunctionSync(type: string = "pecoff", configPath: string = "") {
-    return (file: string) => {
-        return SignSync(file, file, type, configPath);
+    return (path: string) => {
+        return SignSync(path, path, type, configPath);
     }
 }
 
