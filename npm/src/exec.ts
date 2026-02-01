@@ -28,11 +28,11 @@ export function Exec(params: SigningParameters): string {
         paramsList.push('-t', params.type);
     }
 
-    if (params.outputFile) {
+    if (params.outputFile && typeof params.outputFile === 'string' && params.outputFile.length > 0) {
         paramsList.push('-o', winpath(params.outputFile));
     }
 
-    if (params.configFile) {
+    if (params.configFile && typeof params.configFile === 'string' && params.configFile.length > 0) {
         paramsList.push('-c', winpath(params.configFile));
     }
 
