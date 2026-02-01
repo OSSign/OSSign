@@ -123,13 +123,19 @@ export function DownloadBinarySync(version: string = "latest"): string {
 
     try {
         logger("Trying to use curl to download the binary...");
-        execSync(`curl -L "${url}" -o "${targetPath}" && chmod +x "${targetPath}"`, { stdio: 'inherit' });
+        execSync(`curl -L "${url}" -o "${targetPath}"`, { stdio: 'inherit' });
         logger(`Downloaded ${binary} to ${targetPath} using curl.`);
+        if (process.platform !== "win32") {
+            fs.chmodSync(targetPath, 0o755);
+        }
     } catch (error) {
         logger("Curl failed, trying wget...");
         try {
             execSync(`wget "${url}" -O "${targetPath}" && chmod +x "${targetPath}"`, { stdio: 'inherit' });
             logger(`Downloaded ${binary} to ${targetPath} using wget.`);
+            if (process.platform !== "win32") {
+                fs.chmodSync(targetPath, 0o755);
+            }
         } catch (error) {
             logger("Wget also failed. Trying powershell Invoke-WebRequest...");
             try {
