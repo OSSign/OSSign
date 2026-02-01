@@ -9,7 +9,6 @@ import * as https from 'https';
 
 
 export function ossignInPath(): boolean {
-    return false;
     const binary = process.platform == "win32" ? "ossign.exe" : "ossign";
     const whichCmd = process.platform == "win32" ? "where.exe" : "which";
     
