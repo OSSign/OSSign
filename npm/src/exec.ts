@@ -1,7 +1,4 @@
-import * as fs from 'fs';
 import * as child_process from 'child_process';
-import * as os from 'os';
-import * as path from 'path';
 
 export type SigningParameters = {
     binaryPath?: string;
@@ -36,26 +33,6 @@ export function Exec(params: SigningParameters): string {
 
     if (params.configFile) {
         paramsList.push('-c', params.configFile);
-    } else if (process.env.OSSIGN_CONFIG !== undefined || process.env.OSSIGN_CONFIG_BASE64 !== undefined) {
-        // Create a temp file for the config
-        const tempConfigPath = path.join(os.tmpdir(), `ossign_config_${Date.now()}.json`);
-
-        if (process.env.OSSIGN_CONFIG !== undefined) {
-            try {
-                fs.writeFileSync(tempConfigPath, process.env.OSSIGN_CONFIG, 'utf8');
-            } catch (err) {
-                throw new Error(`Failed to write OSSIGN_CONFIG to temp file: ${err}`);
-            }
-        } else {
-            const decodedConfig = Buffer.from(process.env.OSSIGN_CONFIG_BASE64!, 'base64').toString('utf8');
-            try {
-                fs.writeFileSync(tempConfigPath, decodedConfig, 'utf8');
-            } catch (err) {
-                throw new Error(`Failed to write OSSIGN_CONFIG_BASE64 to temp file: ${err}`);
-            }
-        }
-
-        paramsList.push('-c', tempConfigPath);
     }
 
     paramsList.push(params.inputFile);
