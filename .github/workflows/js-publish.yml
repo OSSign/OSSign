@@ -36,5 +36,3 @@ jobs:
       - name: Publish to NPM
         working-directory: npm
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
