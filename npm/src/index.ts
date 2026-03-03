@@ -51,6 +51,12 @@ function GetSignerFunction(type: string = "pecoff", configPath: string = "") {
     }
 }
 
+function GetElectronForgeSignerFunction(type: string = "pecoff", configPath: string = "") {
+    return async (path: string): Promise<void> => {
+        await Sign(path, path, type, configPath);
+    }
+}
+
 function SignSync(file: string, outFile: string = "", type: string = "pecoff", configPath: string = "" ) {
     logger('Starting synchronous sign operation');
 
@@ -108,5 +114,6 @@ export {
   Sign,
   SignSync,
   GetSignerFunction,
-  GetSignerFunctionSync
+  GetSignerFunctionSync,
+  GetElectronForgeSignerFunction
 }
