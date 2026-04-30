@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"path/filepath"
-	"strings"
 
 	"github.com/ossign/ossign/pkg/vfs"
 	"github.com/sassoftware/relic/v8/config"
@@ -29,6 +26,7 @@ var MapTypeToFunc = map[SignatureType]func(*rvfs.File, *certloader.Certificate, 
 	"appmanifest": SignAppmanifest,
 	"dmg":         SignDmg,
 	"machos":      SignMachos,
+	"auto":        SignAuto,
 }
 
 func Run(cmd *cobra.Command, args []string) {
@@ -49,8 +47,9 @@ func Run(cmd *cobra.Command, args []string) {
 	}
 
 	if GlobalConfig.OutputFile == "" {
-		fileExt := filepath.Ext(GlobalConfig.InputFile)
-		GlobalConfig.OutputFile = fmt.Sprintf("%s-signed.%s", strings.TrimSuffix(filepath.Base(GlobalConfig.InputFile), fileExt), fileExt)
+		GlobalConfig.OutputFile = GlobalConfig.InputFile
+		// fileExt := filepath.Ext(GlobalConfig.InputFile)
+		// GlobalConfig.OutputFile = fmt.Sprintf("%s-signed.%s", strings.TrimSuffix(filepath.Base(GlobalConfig.InputFile), fileExt), fileExt)
 	}
 
 	ctx := context.Background()
