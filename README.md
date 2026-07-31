@@ -24,8 +24,8 @@ An easy to use CLI code signing tool based on [Relic](https://github.com/sassoft
 You can use the APT repository to install and update the OSSign CLI on Debian-based systems.
 
 ```bash
-sudo curl https://pkg.ossign.org/debian/repository.key -o /etc/apt/keyrings/gitea-ossign.asc
-echo "deb [signed-by=/etc/apt/keyrings/gitea-ossign.asc] https://pkg.ossign.org/debian all main" | sudo tee /etc/apt/sources.list.d/ossign.list
+sudo curl https://vcs.fi/api/packages/OSSign/debian/repository.key -o /etc/apt/keyrings/forgejo-OSSign.asc
+echo "deb [signed-by=/etc/apt/keyrings/forgejo-OSSign.asc] https://vcs.fi/api/packages/OSSign/debian stable main" | sudo tee /etc/apt/sources.list.d/forgejo.list
 sudo apt update
 sudo apt install ossign
 ```
