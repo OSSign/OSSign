@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/ossign/ossign/pkg/azure"
+	"github.com/ossign/ossign/pkg/ossignserver"
 	"github.com/sassoftware/relic/v8/lib/certloader"
 	"github.com/sassoftware/relic/v8/lib/pkcs9"
 )
@@ -19,6 +20,7 @@ const (
 	TokenTypeAzure        TokenType = "azure"
 	TokenTypeAzureTrusted TokenType = "azureTrusted"
 	TokenTypeCertificate  TokenType = "certificate"
+	TokenTypeOSSignServer TokenType = "ossignServer"
 
 	AutoSignature         SignatureType = "auto"
 	PowershellSignature   SignatureType = "powershell"
@@ -50,6 +52,8 @@ type SigningConfig struct {
 	AzureTrustedConfig AzureTrustedConfig `json:"azureTrusted,omitempty" yaml:"azureTrusted,omitempty" mapstructure:"azureTrusted"`
 
 	CertConfig CertConfig `json:"certificate,omitempty" yaml:"certificate,omitempty" mapstructure:"certificate"`
+
+	OSSignServerConfig OSSignServerConfig `json:"ossignServer,omitempty" yaml:"ossignServer,omitempty" mapstructure:"ossignServer"`
 
 	TimestampUrl   string `json:"timestampUrl,omitempty" yaml:"timestampUrl,omitempty" mapstructure:"timestampUrl"`
 	MsTimestampUrl string `json:"msTimestampUrl,omitempty" yaml:"msTimestampUrl,omitempty" mapstructure:"msTimestampUrl"`
@@ -83,8 +87,19 @@ func UnmarshalConfig(path string) (*SigningConfig, error) {
 }
 
 func (c *SigningConfig) Validate() error {
-	if c.InputFile == "" || c.TokenType == "" || (c.AzureConfig.ClientSecret == "" && c.CertConfig.PrivateKey == "") {
+	if c.InputFile == "" || c.TokenType == "" {
 		return fmt.Errorf("missing required configuration")
+	}
+
+	switch c.TokenType {
+	case TokenTypeOSSignServer:
+		if c.OSSignServerConfig.Url == "" || c.OSSignServerConfig.Key == "" {
+			return fmt.Errorf("ossignServer.url and ossignServer.key are required")
+		}
+	default:
+		if c.AzureConfig.ClientSecret == "" && c.AzureTrustedConfig.ClientSecret == "" && c.CertConfig.PrivateKey == "" {
+			return fmt.Errorf("missing required configuration")
+		}
 	}
 
 	if c.SignatureType == "" {
@@ -117,6 +132,18 @@ func (c *SigningConfig) GetSigner(timestamper pkcs9.Timestamper, ctx context.Con
 		}
 
 		return signerCert, nil
+	}
+
+	if c.TokenType == TokenTypeOSSignServer {
+		return ossignserver.NewKey(ctx, ossignserver.Options{
+			URL:        c.OSSignServerConfig.Url,
+			Key:        c.OSSignServerConfig.Key,
+			Audience:   c.OSSignServerConfig.Audience,
+			Provider:   c.OSSignServerConfig.Provider,
+			IDToken:    c.OSSignServerConfig.IdToken,
+			IDTokenEnv: c.OSSignServerConfig.IdTokenEnv,
+			Metadata:   c.OSSignServerConfig.Metadata,
+		}, timestamper)
 	}
 
 	if c.TokenType == TokenTypeAzureTrusted {
@@ -162,6 +189,28 @@ type AzureTrustedConfig struct {
 	ClientSecret string `json:"clientSecret" yaml:"clientSecret" mapstructure:"clientSecret"`
 	Account      string `json:"account" yaml:"account" mapstructure:"account"`
 	Profile      string `json:"profile" yaml:"profile" mapstructure:"profile"`
+}
+
+// OSSignServerConfig configures signing through an OSSign Server.
+//
+// No secrets are needed: the CLI obtains an OIDC token from the CI provider
+// (e.g. GitHub Actions) and the server decides, based on the token's claims,
+// whether this repository/branch/environment may use the requested key.
+type OSSignServerConfig struct {
+	// Base URL of the OSSign Server, e.g. https://sign.example.com
+	Url string `json:"url" yaml:"url" mapstructure:"url"`
+	// Name of the signing key (as configured on the server)
+	Key string `json:"key" yaml:"key" mapstructure:"key"`
+	// Audience to request in the OIDC token. Defaults to the server URL.
+	Audience string `json:"audience,omitempty" yaml:"audience,omitempty" mapstructure:"audience"`
+	// How to obtain the OIDC token: auto (default), github, gitlab, env or static
+	Provider string `json:"provider,omitempty" yaml:"provider,omitempty" mapstructure:"provider"`
+	// A pre-obtained OIDC token (provider: static)
+	IdToken string `json:"idToken,omitempty" yaml:"idToken,omitempty" mapstructure:"idToken"`
+	// Name of an environment variable holding the OIDC token (provider: env / gitlab)
+	IdTokenEnv string `json:"idTokenEnv,omitempty" yaml:"idTokenEnv,omitempty" mapstructure:"idTokenEnv"`
+	// Free-form metadata sent with each signing request for server side auditing
+	Metadata map[string]string `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata"`
 }
 
 type CertConfig struct {
