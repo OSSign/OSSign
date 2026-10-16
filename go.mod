@@ -1,6 +1,6 @@
 module github.com/ossign/ossign
 
-go 1.24.5
+go 1.27.2
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.12.0
