@@ -22,6 +22,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -63,6 +64,9 @@ type TokenResponse struct {
 	TokenType   string    `json:"tokenType"`
 	ExpiresAt   time.Time `json:"expiresAt"`
 	Key         KeyInfo   `json:"key"`
+	// TestMode is true when the granting policy is in test mode. Signatures are
+	// then made with a self-signed test certificate.
+	TestMode bool `json:"testMode,omitempty"`
 }
 
 // KeyInfo describes a signing key as returned by the server.
@@ -75,6 +79,7 @@ type KeyInfo struct {
 	SubjectName         string   `json:"subjectName,omitempty"`
 	SerialNumber        string   `json:"serialNumber,omitempty"`
 	NotAfter            string   `json:"notAfter,omitempty"`
+	TestMode            bool     `json:"testMode,omitempty"`
 }
 
 // CertificateResponse is the response of GET /api/v1/keys/{key}/certificate.
@@ -240,6 +245,9 @@ func (k *Key) ensureToken(ctx context.Context) error {
 	}
 	if resp.AccessToken == "" {
 		return fmt.Errorf("OSSign Server returned an empty access token")
+	}
+	if resp.TestMode {
+		log.Printf("WARNING: policy is in test mode, signing with a self-signed TEST certificate")
 	}
 	k.token = &resp
 	return nil
