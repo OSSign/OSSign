@@ -16,28 +16,45 @@ const archTranslations: { [key: string]: string } = {
     'ia32': 'i386'
 };
 
+const releaseOwner = "ossign";
+const releaseRepo = "ossign";
+
+// Resolve the latest tag by following the redirect of the public
+// releases/latest page. Needs no token and is not subject to API rate limits.
+async function latestTagFromRedirect(): Promise<string> {
+    const url = `https://github.com/${releaseOwner}/${releaseRepo}/releases/latest`;
+    const response = await fetch(url, { method: "HEAD", redirect: "manual" });
+    const location = response.headers.get("location");
+    if (!location) {
+        throw new Error(`Expected a redirect from ${url}, got status ${response.status}`);
+    }
+    const tag = decodeURIComponent(location.split("/releases/tag/")[1] ?? "").split(/[?#]/)[0];
+    if (!tag) {
+        throw new Error(`Could not read a release tag from redirect target ${location}`);
+    }
+    return tag;
+}
+
 export async function FindLatestToolVersion() : Promise<string> {
     core.info("Finding latest ossign version...");
     const token = core.getInput("token");
-    core.info("Using provided GitHub token to fetch latest release");
-    
-    if (!token || token.trim() === "") {
-        throw new Error("GitHub token is required to fetch latest release");
-    }
-    const response = await github.getOctokit(token).rest.repos.getLatestRelease({
-        owner: "ossign",
-        repo: "ossign",
-    });
 
-    core.info(`Latest release response: ${JSON.stringify(response.data)}`);
-
-    const tagName = response.data.tag_name;
-    if (!tagName) {
-        throw new Error("Could not find latest release tag");
+    if (token && token.trim() !== "") {
+        core.info("Using the provided GitHub token to fetch the latest release");
+        const response = await github.getOctokit(token).rest.repos.getLatestRelease({
+            owner: releaseOwner,
+            repo: releaseRepo,
+        });
+        const tagName = response.data.tag_name;
+        if (!tagName) {
+            throw new Error("Could not find latest release tag");
+        }
+        core.info(`Latest release tag is ${tagName}`);
+        return tagName;
     }
 
+    const tagName = await latestTagFromRedirect();
     core.info(`Latest release tag is ${tagName}`);
-
     return tagName;
 }
 

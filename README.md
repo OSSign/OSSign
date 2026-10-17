@@ -114,8 +114,9 @@ You can use the ossign action like this:
 ```yaml
 - uses: ossign/ossign-action@v1
   with:
-    # Github Token (read-only)
-    token: ${{ secrets.GITHUB_TOKEN }}
+    # Optional. The latest release is found without a token; pass one only if
+    # you want the authenticated GitHub API to be used instead.
+    # token: ${{ secrets.GITHUB_TOKEN }}
 
     # Only install the OSSign CLI, don't sign anything
     # The command can then be run with "ossign" in a later step
@@ -143,8 +144,9 @@ For trusted signing together with OSSign Server (TBA), use the following configu
 ```yaml
 - uses: ossign/ossign-action@v1
   with:
-    # Github Token (read-only)
-    token: ${{ secrets.GITHUB_TOKEN }}
+    # Optional. The latest release is found without a token; pass one only if
+    # you want the authenticated GitHub API to be used instead.
+    # token: ${{ secrets.GITHUB_TOKEN }}
 
     # Only install the OSSign CLI, don't sign anything
     # The command can then be run with "ossign" in a later step
@@ -173,8 +175,9 @@ Do note that the later step still requires `id-token: write` permission to be ab
 ```yaml
 - uses: ossign/ossign-action@v1
   with:
-    # Github Token (read-only)
-    token: ${{ secrets.GITHUB_TOKEN }}
+    # Optional. The latest release is found without a token; pass one only if
+    # you want the authenticated GitHub API to be used instead.
+    # token: ${{ secrets.GITHUB_TOKEN }}
 
     # Only install the OSSign CLI, don't sign anything
     installOnly: true

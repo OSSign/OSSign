@@ -8,8 +8,9 @@ branding:
 
 inputs:
   token:
-    description: 'GitHub token with repo read access. Used to fetch the latest OSSign Binary'
-    required: true
+    description: 'Optional GitHub token. The latest OSSign release is resolved without a token by default; supply one only to use the authenticated API instead.'
+    required: false
+    default: ''
   
   trustedSigning:
     description: 'Enable OSSign Trusted Signing (OSSign Server)'
