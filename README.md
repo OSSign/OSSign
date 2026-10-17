@@ -195,6 +195,18 @@ Do note that the later step still requires `id-token: write` permission to be ab
 
 
 
+### Verifying a signed file
+
+```bash
+ossign verify myFile-signed.exe
+ossign verify --cert expected.pem myFile-signed.exe
+```
+
+Checks the embedded signature of PE/COFF, MSI, CAB, APPX/MSIX and PowerShell
+files, prints the signer and timestamp, and exits with 1 on a broken
+signature, 2 when the file was signed with an OSSign Server test-mode
+certificate, and 3 when the signer does not match `--cert`.
+
 ## Configuration Examples
 ### Using Azure Key Vault (json)
 ```yaml

@@ -41826,6 +41826,14 @@ async function run() {
         coreExports.info("Trusted signing is enabled, writing out configuration...");
         config = await makeTrustedConfig();
     }
+    // Signing through an OSSign Server needs the job's OIDC token. GitHub only
+    // provides it when the job declares `permissions: id-token: write`; fail
+    // here with a clear message instead of a confusing error from the CLI.
+    const usesServer = trustedSigning || /"tokenType"\s*:\s*"ossignServer"|tokenType:\s*ossignServer/.test(config);
+    if (usesServer && !process.env["ACTIONS_ID_TOKEN_REQUEST_URL"]) {
+        coreExports.setFailed("This job signs through an OSSign Server, which needs an OIDC token, but the job has no `permissions: id-token: write`. Add it to the job (or workflow) permissions and run again.");
+        return;
+    }
     let configPath = "";
     if (config && config.trim() !== "" && installOnly) {
         coreExports.info("Using provided ossign config");
