@@ -27,9 +27,7 @@ async function makeTrustedConfig() : Promise<string> {
     });
 }
 
-async function InstallConfig() : Promise<string> {
-    const config = core.getInput("config");
-
+async function InstallConfig(config: string) : Promise<string> {
     if (!config || config.trim() === "" || config.length < 10) {   
         core.info("No config provided, skipping config installation");
         return "";
@@ -69,7 +67,7 @@ export async function run() {
 
     if (config && config.trim() !== "" && installOnly) {
         core.info("Using provided ossign config");
-        configPath = await InstallConfig();
+        configPath = await InstallConfig(config);
     }
 
     const binaryPath = await InstallOssign();

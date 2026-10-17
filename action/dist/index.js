@@ -41778,8 +41778,7 @@ async function makeTrustedConfig() {
         "msTimestampUrl": trustedSigningMsTimestamper
     });
 }
-async function InstallConfig() {
-    const config = coreExports.getInput("config");
+async function InstallConfig(config) {
     if (!config || config.trim() === "" || config.length < 10) {
         coreExports.info("No config provided, skipping config installation");
         return "";
@@ -41811,7 +41810,7 @@ async function run() {
     let configPath = "";
     if (config && config.trim() !== "" && installOnly) {
         coreExports.info("Using provided ossign config");
-        configPath = await InstallConfig();
+        configPath = await InstallConfig(config);
     }
     const binaryPath = await InstallOssign();
     coreExports.info("OSSign Binary has been successfully installed");
