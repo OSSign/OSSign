@@ -7,7 +7,10 @@ on:
 
 jobs:
   build:
-    permissions: write-all
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -16,14 +19,26 @@ jobs:
       name: Install go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.25.0
+        go-version: 1.27.2
         cache-dependency-path: go.mod
     
     - name: Setup OSSign
-      uses: ossign/actions/setup-ossign@main
+      uses: ossign/ossign@main
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        ossignConfig: ""
+        installOnly: true
+    
+    - name: Create custom ID Token for publishing
+      run: |
+        set -euo pipefail
+        ID_TOKEN=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https%3A%2F%2Fpkg.osshield.eu" | jq -r .value)
+        echo "::add-mask::$ID_TOKEN"
+        TOKEN=$(curl -sSf -X POST -H "Authorization: Bearer $ID_TOKEN" \
+          https://pkg.osshield.eu/api/v1/auth/github/exchange | jq -r .token)
+        if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then echo "token exchange returned no token" >&2; exit 1; fi
+        echo "::add-mask::$TOKEN"
+        echo "REPO_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
     - name: Goreleaser
       uses: goreleaser/goreleaser-action@v6
@@ -33,35 +48,8 @@ jobs:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        UPLOAD_DEBPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_DEBPKG-ARM_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_APKPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_RPMPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
-        MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
-        MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
-        MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
-        MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
         OSSIGN_CONFIG: ${{ secrets.OSSIGN_CONFIG }}
-      
-    - name: Goreleaser
-      uses: goreleaser/goreleaser-action@v6
-      if: ${{ github.ref_name == 'main' }}
-      with:
-        version: ${{ github.event.release.tag.name }}
-        args: release --snapshot --clean
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        UPLOAD_DEBPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_DEBPKG-ARM_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_APKPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        UPLOAD_RPMPKG-AMD_SECRET: ${{ secrets.PACKAGE_REPO_SECRET }}
-        MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
-        MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
-        MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
-        MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
-        MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
-        OSSIGN_CONFIG: ${{ secrets.OSSIGN_CONFIG }}
+        REPO_TOKEN: ${{ env.REPO_TOKEN }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

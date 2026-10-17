@@ -1,7 +1,7 @@
 version: 2
 
 builds:
-  - id: linuxbuild-amd
+  - id: linux
     main: ./cmd/
     env:
       - CGO_ENABLED=0
@@ -9,17 +9,9 @@ builds:
       - linux
     goarch:
       - amd64
-  
-  - id: linuxbuild-arm
-    main: ./cmd/
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-    goarch:
       - arm64
-
-  - id: macbuild
+  
+  - id: darwin
     main: ./cmd/
     env:
       - CGO_ENABLED=0
@@ -28,8 +20,8 @@ builds:
     goarch:
       - amd64
       - arm64
-
-  - id: winbuild
+  
+  - id: windows
     main: ./cmd/
     env:
       - CGO_ENABLED=0
@@ -60,29 +52,7 @@ changelog:
       - "^test:"
 
 nfpms:
-  - id: linuxbuild-amd-nfpms
-    ids:
-      - linuxbuild-amd
-    package_name: "ossign"
-    description: "ossign - A code signing tool"
-    vendor: "OSSign"
-    maintainer: OSSign <contact@ossign.org>
-    file_name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}amd64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    formats:
-      - deb
-      - apk
-      - rpm
-    bindir: /usr/local/bin
-
-  - id: linuxbuild-arm-nfpms
-    ids:
-      - linuxbuild-arm
+  - id: linux-nfpms
     package_name: "ossign"
     description: "ossign - A code signing tool"
     vendor: "OSSign"
@@ -103,7 +73,7 @@ nfpms:
 binary_signs:
   - id: ossign
     ids:
-      - winbuild
+      - windows
     cmd: ossign
     signature: "${artifact}"
     args:
@@ -117,7 +87,7 @@ notarize:
   macos:
     - enabled: false
       ids:
-        - macbuild
+        - darwin
       sign:
         certificate: "{{ .Env.MACOS_SIGN_P12 }}"
         password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
@@ -136,32 +106,35 @@ release:
     name: ossign
 
 uploads:
-  - name: "debpkg-amd"
-    ids: ["linuxbuild-amd-nfpms"]
+  - name: "debian"
+    ids: ["linux-nfpms"]
     method: "PUT"
     exts:
       - deb
     mode: archive
-    username: "ossign-dev"
-    target: https://pkg.ossign.org/debian/pool/all/main/upload
+    target: https://deb.ossign.org/upload?dist=all&component=main
     custom_artifact_name: true
+    custom_headers:
+      Authorization: "Bearer {{ .Env.REPO_TOKEN }}"
   
-  - name: "apkpkg-amd"
+  - name: "alpine"
     method: "PUT"
-    ids: ["linuxbuild-amd-nfpms"]
+    ids: ["linux-nfpms"]
     exts:
       - apk
     mode: archive
-    username: "ossign-dev"
-    target: https://pkg.ossign.org/alpine/all/repository
+    target: https://alpine.ossign.org/upload?repo=all
     custom_artifact_name: true
+    custom_headers:
+      Authorization: "Bearer {{ .Env.REPO_TOKEN }}"
   
-  - name: "rpmpkg-amd"
+  - name: "rpm"
     method: "PUT"
-    ids: ["linuxbuild-amd-nfpms"]
+    ids: ["linux-nfpms"]
     exts:
       - rpm
     mode: archive
-    username: "ossign-dev"
-    target: https://pkg.ossign.org/rpm/upload
+    target: https://rpm.ossign.org/upload?repo=all
     custom_artifact_name: true
+    custom_headers:
+      Authorization: "Bearer {{ .Env.REPO_TOKEN }}"

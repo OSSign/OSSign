@@ -1,38 +1,40 @@
-name: Publish to NPM
+# name: Publish to NPM
 
-on:
-  push:
-    tags: ["*.*.*"]
+# on:
+#   push:
+#     tags: ["*.*.*"]
 
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
+# jobs:
+#   publish:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#       id-token: write
     
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        working-directory: npm
-        run: npm ci
+#       - name: Install dependencies
+#         working-directory: npm
+#         run: npm ci
 
-      - name: Build package
-        working-directory: npm
-        run: npm run build
+#       - name: Build package
+#         working-directory: npm
+#         run: npm run build
 
-      - name: Update version if specified
-        working-directory: npm
-        run: npm version ${{ github.ref_name }} --no-git-tag-version
+#       - name: Update version if specified
+#         working-directory: npm
+#         run: npm version ${{ github.ref_name }} --no-git-tag-version
 
-      - name: Publish to NPM
-        working-directory: npm
-        run: npm publish --provenance --access public
+#       - name: Publish to NPM
+#         working-directory: npm
+#         run: |
+#           npm login
+#           npm publish --provenance --access public
