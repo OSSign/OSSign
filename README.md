@@ -138,6 +138,58 @@ You can use the ossign action like this:
     signatureType: pecoff
 ```
 
+For trusted signing together with OSSign Server (TBA), use the following configuration. Please note that trusted signing needs `id-token: write` permission to be able to issue a token for use in the signing process.
+
+```yaml
+- uses: ossign/ossign-action@v1
+  with:
+    # Github Token (read-only)
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Only install the OSSign CLI, don't sign anything
+    # The command can then be run with "ossign" in a later step
+    installOnly: false
+
+    # Enable trusted signing
+    trustedSigning: true
+
+    # Set the key to use in the trusted signing server
+    trustedSigningKey: test-certificate
+    
+    # Sign a single file
+    inputFile: path/to/file.exe
+
+    # Sign multiple files using a glob pattern
+    inputFiles: path/to/*.exe
+
+    # Type of signature. Can be "pecoff", "msi", "jar", "apk" or "dmg"
+    signatureType: pecoff
+```
+
+You can also install the configuration along with installOnly, and then just use the ossign CLI in a later step without providing the configuration again. This is especially useful for workflows with for example tauri, electron-builder or goreleaser which sign multiple times during their build process.
+
+Do note that the later step still requires `id-token: write` permission to be able to issue a token for use in the signing process, since that is done at the time of signing.
+
+```yaml
+- uses: ossign/ossign-action@v1
+  with:
+    # Github Token (read-only)
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Only install the OSSign CLI, don't sign anything
+    installOnly: true
+
+    # Enable trusted signing (along with installOnly will install the config file for later use)
+    trustedSigning: true
+
+    # Set the key to use in the trusted signing server
+    trustedSigningKey: test-certificate
+
+- name: Sign my file
+  run: |
+    ossign -t pecoff path/to/file.exe
+```
+
 
 
 ## Configuration Examples

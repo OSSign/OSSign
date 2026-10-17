@@ -27,6 +27,8 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         installOnly: true
+        trustedSigning: true
+        trustedSigningKey: evcode
     
     - name: Create custom ID Token for publishing
       run: |
@@ -48,7 +50,6 @@ jobs:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OSSIGN_CONFIG: ${{ secrets.OSSIGN_CONFIG }}
         REPO_TOKEN: ${{ env.REPO_TOKEN }}
     
     - name: Upload artifacts
