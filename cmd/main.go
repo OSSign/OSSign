@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"path/filepath"
-	"strings"
 
 	"github.com/ossign/ossign/pkg/vfs"
 	"github.com/sassoftware/relic/v8/config"
@@ -48,9 +45,10 @@ func Run(cmd *cobra.Command, args []string) {
 		log.Fatal("No input file specified")
 	}
 
+	// Default is signing in place, which is what the ossign action, the npm
+	// package and build-tool hooks expect. Use -o to write a copy instead.
 	if GlobalConfig.OutputFile == "" {
-		fileExt := filepath.Ext(GlobalConfig.InputFile)
-		GlobalConfig.OutputFile = fmt.Sprintf("%s-signed.%s", strings.TrimSuffix(filepath.Base(GlobalConfig.InputFile), fileExt), fileExt)
+		GlobalConfig.OutputFile = GlobalConfig.InputFile
 	}
 
 	ctx := context.Background()

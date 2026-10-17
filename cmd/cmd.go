@@ -34,7 +34,7 @@ func init() {
 
 	// Signing flags
 	rootCmd.Flags().StringVarP((*string)(&GlobalConfig.SignatureType), "sign-type", "t", "", "Type of file to sign (powershell, pecoff, authenticode, dmg, auto)")
-	rootCmd.Flags().StringVarP(&GlobalConfig.OutputFile, "output", "o", "", "Output file for the signed binary (Default: [inputFile]-signed[.ext])")
+	rootCmd.Flags().StringVarP(&GlobalConfig.OutputFile, "output", "o", "", "Output file for the signed binary (default: sign in place, overwriting the input)")
 }
 
 func initConfig() {

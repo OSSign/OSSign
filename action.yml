@@ -56,7 +56,7 @@ inputs:
     required: false
 
   outputFile:
-    description: 'The output signed file, default [inputFilename]-signed.[inputExt]'
+    description: 'Where to write the signed file. Default: sign in place, overwriting the input.'
     required: false
 
   fileType:

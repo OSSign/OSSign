@@ -103,7 +103,7 @@ msTimestampUrl: http://timestamp.microsoft.com/tsa
 # Input file. Can also be provided on the command line
 # inputFile: myFile.exe
 
-# Output file. If not provided, the signed file will be saved as [fileName]-signed.[fileExtension]
+# Output file. If not provided, the input file is signed in place.
 # outputFile: myFile-signed.exe
 ```
 
@@ -234,7 +234,7 @@ msTimestampUrl: http://timestamp.microsoft.com/tsa
 # Input file. Can also be provided on the command line
 # inputFile: myFile.exe
 
-# Output file. If not provided, the signed file will be saved as [fileName]-signed.[fileExtension]
+# Output file. If not provided, the input file is signed in place.
 # outputFile: myFile-signed.exe
 ```
 
