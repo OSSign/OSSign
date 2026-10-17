@@ -41773,6 +41773,7 @@ async function makeTrustedConfig() {
         "ossignServer": {
             "url": trustedSigningServer,
             "key": trustedSigningKey,
+            "provider": "github"
         },
         "timestampUrl": trustedSigningTimestamper,
         "msTimestampUrl": trustedSigningMsTimestamper
@@ -41881,7 +41882,10 @@ async function run() {
                 env: {
                     "OSSIGN_CONFIG": config,
                     "HOME": process.env["HOME"] || "",
-                    "USERPROFILE": process.env["USERPROFILE"] || ""
+                    "USERPROFILE": process.env["USERPROFILE"] || "",
+                    "ACTIONS_ID_TOKEN_REQUEST_URL": process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] || "",
+                    "ACTIONS_ID_TOKEN_REQUEST_TOKEN": process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] || "",
+                    "OSSIGN_ID_TOKEN": process.env["OSSIGN_ID_TOKEN"] || ""
                 }
             });
             if (signResp.exitCode !== 0) {
@@ -41909,7 +41913,10 @@ async function run() {
         env: {
             "OSSIGN_CONFIG": config,
             "HOME": process.env["HOME"] || "",
-            "USERPROFILE": process.env["USERPROFILE"] || ""
+            "USERPROFILE": process.env["USERPROFILE"] || "",
+            "ACTIONS_ID_TOKEN_REQUEST_URL": process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] || "",
+            "ACTIONS_ID_TOKEN_REQUEST_TOKEN": process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] || "",
+            "OSSIGN_ID_TOKEN": process.env["OSSIGN_ID_TOKEN"] || ""
         }
     });
     if (signResp.exitCode !== 0) {
