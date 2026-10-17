@@ -41760,6 +41760,24 @@ const glob = Object.assign(glob_, {
 });
 glob.glob = glob;
 
+async function makeTrustedConfig() {
+    const trustedSigningServer = coreExports.getInput("trustedSigningServer");
+    const trustedSigningKey = coreExports.getInput("trustedSigningKey");
+    const trustedSigningTimestamper = coreExports.getInput("trustedSigningTimestamper");
+    const trustedSigningMsTimestamper = coreExports.getInput("trustedSigningMsTimestamper");
+    if (trustedSigningServer == "" || trustedSigningKey == "" || trustedSigningTimestamper == "" || trustedSigningMsTimestamper == "") {
+        throw new Error("Trusted signing configuration is incomplete");
+    }
+    return JSON.stringify({
+        "tokenType": "ossignServer",
+        "ossignServer": {
+            "url": trustedSigningServer,
+            "key": trustedSigningKey,
+        },
+        "timestampUrl": trustedSigningTimestamper,
+        "msTimestampUrl": trustedSigningMsTimestamper
+    });
+}
 async function InstallConfig() {
     const config = coreExports.getInput("config");
     if (!config || config.trim() === "" || config.length < 10) {
@@ -41783,8 +41801,13 @@ async function InstallConfig() {
     return configPath;
 }
 async function run() {
-    const config = coreExports.getInput("config");
+    var config = coreExports.getInput("config");
     const installOnly = coreExports.getInput("installOnly").toLowerCase() === "true";
+    const trustedSigning = coreExports.getInput("trustedSigning").toLowerCase() === "true";
+    if (trustedSigning) {
+        coreExports.info("Trusted signing is enabled, writing out configuration...");
+        config = await makeTrustedConfig();
+    }
     let configPath = "";
     if (config && config.trim() !== "" && installOnly) {
         coreExports.info("Using provided ossign config");

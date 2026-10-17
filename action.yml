@@ -11,6 +11,31 @@ inputs:
     description: 'GitHub token with repo read access. Used to fetch the latest OSSign Binary'
     required: true
   
+  trustedSigning:
+    description: 'Enable OSSign Trusted Signing (OSSign Server)'
+    default: false
+    required: false
+  
+  trustedSigningServer:
+    description: 'The URL of the OSSign Server to use for trusted signing (OSSign Server)'
+    required: false
+    default: 'https://signer.ossign.org'
+  
+  trustedSigningKey:
+    description: 'The key to use for OSSign Trusted Signing (OSSign Server)'
+    required: false
+    default: ''
+  
+  trustedSigningTimestamper:
+    description: 'The timestamper to use for OSSign Trusted Signing (OSSign Server)'
+    required: false
+    default: 'http://timestamp.acs.microsoft.com/tsa/advanced'
+  
+  trustedSigningMsTimestamper:
+    description: 'The Microsoft timestamper to use for OSSign Trusted Signing (OSSign Server)'
+    required: false
+    default: 'http://timestamp.acs.microsoft.com/tsa'
+
   installOnly:
     description: 'If true, only install ossign and config, do not sign any files'
     required: false

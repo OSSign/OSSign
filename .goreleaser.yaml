@@ -32,7 +32,8 @@ builds:
       - arm64
 
 archives:
-  - formats: [ tar.gz, binary ]
+  - id: archives
+    formats: [ tar.gz, binary ]
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
@@ -71,7 +72,7 @@ nfpms:
     bindir: /usr/local/bin
 
 binary_signs:
-  - id: ossign
+  - id: windows-signed
     ids:
       - windows
     cmd: ossign
@@ -101,6 +102,13 @@ notarize:
         timeout: 20m
 
 release:
+  ids:
+    - archives
+    - linux
+    - linux-nfpms
+    - darwin
+    # Don't upload the binary_signs since this signs in-place
+    - windows
   github:
     owner: ossign
     name: ossign

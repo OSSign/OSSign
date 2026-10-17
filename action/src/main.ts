@@ -5,10 +5,32 @@ import * as exec from "@actions/exec";
 //import * as glob from "@actions/glob";
 import { Glob } from "glob";
 
+
+async function makeTrustedConfig() : Promise<string> {
+    const trustedSigningServer = core.getInput("trustedSigningServer");
+    const trustedSigningKey = core.getInput("trustedSigningKey");
+    const trustedSigningTimestamper = core.getInput("trustedSigningTimestamper");
+    const trustedSigningMsTimestamper = core.getInput("trustedSigningMsTimestamper");
+
+    if (trustedSigningServer == "" || trustedSigningKey == "" || trustedSigningTimestamper == "" || trustedSigningMsTimestamper == "") {
+        throw new Error("Trusted signing configuration is incomplete");
+    }
+
+    return JSON.stringify({
+        "tokenType": "ossignServer",
+        "ossignServer": {
+            "url": trustedSigningServer,
+            "key": trustedSigningKey,
+        },
+        "timestampUrl": trustedSigningTimestamper,
+        "msTimestampUrl": trustedSigningMsTimestamper
+    });
+}
+
 async function InstallConfig() : Promise<string> {
     const config = core.getInput("config");
 
-    if (!config || config.trim() === "" || config.length < 10) {
+    if (!config || config.trim() === "" || config.length < 10) {   
         core.info("No config provided, skipping config installation");
         return "";
     }
@@ -34,8 +56,14 @@ async function InstallConfig() : Promise<string> {
 
    
 export async function run() {
-    const config = core.getInput("config");
+    var config = core.getInput("config");
     const installOnly = core.getInput("installOnly").toLowerCase() === "true";
+    
+    const trustedSigning = core.getInput("trustedSigning").toLowerCase() === "true";
+    if (trustedSigning) {
+        core.info("Trusted signing is enabled, writing out configuration...")
+        config = await makeTrustedConfig();
+    }
 
     let configPath = "";
 
