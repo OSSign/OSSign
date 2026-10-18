@@ -200,6 +200,7 @@ Do note that the later step still requires `id-token: write` permission to be ab
 ```bash
 ossign verify myFile-signed.exe
 ossign verify --cert expected.pem myFile-signed.exe
+ossign verify --detached review-report.json.p7s review-report.json   # OSSign Server review report
 ```
 
 Checks the embedded signature of PE/COFF, MSI, CAB, APPX/MSIX and PowerShell

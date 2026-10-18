@@ -11,6 +11,7 @@ import (
 
 	"github.com/sassoftware/relic/v8/lib/authenticode"
 	"github.com/sassoftware/relic/v8/lib/certloader"
+	"github.com/sassoftware/relic/v8/lib/pkcs7"
 	"github.com/sassoftware/relic/v8/lib/pkcs9"
 	"github.com/sassoftware/relic/v8/lib/signappx"
 	"github.com/spf13/cobra"
@@ -27,17 +28,53 @@ var verifyCmd = &cobra.Command{
 file, prints the signer certificate and timestamp, and warns when the file was
 signed with an OSSign Server test-mode certificate (exit code 2).
 
+With --detached <file.p7s> the file is any content and the signature is a
+detached CMS/PKCS#7 signature over it, as published by OSSign Server next to
+review-report.json.
+
 With --cert the signer must match the given PEM certificate (exit code 3 otherwise).
 Signature or digest failures exit with code 1.`,
 	Args: cobra.ExactArgs(1),
 	RunE: runVerify,
 }
 
-var verifyExpectedCert string
+var (
+	verifyExpectedCert string
+	verifyDetachedSig  string
+)
 
 func init() {
 	verifyCmd.Flags().StringVar(&verifyExpectedCert, "cert", "", "PEM certificate the signer must match")
+	verifyCmd.Flags().StringVar(&verifyDetachedSig, "detached", "", "detached CMS/PKCS#7 signature file (.p7s) over the given file")
 	rootCmd.AddCommand(verifyCmd)
+}
+
+// verifyDetached checks a detached CMS signature over content.
+func verifyDetached(sigPath, contentPath string) (signerInfo, error) {
+	sig, err := os.ReadFile(sigPath)
+	if err != nil {
+		return signerInfo{}, err
+	}
+	if len(sig) == 0 {
+		return signerInfo{}, fmt.Errorf("%s is empty: the report was published unsigned", sigPath)
+	}
+	content, err := os.ReadFile(contentPath)
+	if err != nil {
+		return signerInfo{}, err
+	}
+	psd, err := pkcs7.Unmarshal(sig)
+	if err != nil {
+		return signerInfo{}, fmt.Errorf("parsing signature: %w", err)
+	}
+	v, err := psd.Content.Verify(content, false)
+	if err != nil {
+		return signerInfo{}, err
+	}
+	info := signerInfo{Cert: v.Certificate}
+	if t, err := v.SignerInfo.SigningTime(); err == nil {
+		info.SignedAt = t
+	}
+	return info, nil
 }
 
 type signerInfo struct {
@@ -45,6 +82,7 @@ type signerInfo struct {
 	Hash      crypto.Hash
 	Timestamp *pkcs9.CounterSignature
 	Opus      *authenticode.SpcSpOpusInfo
+	SignedAt  time.Time
 }
 
 func runVerify(cmd *cobra.Command, args []string) error {
@@ -61,7 +99,16 @@ func runVerify(cmd *cobra.Command, args []string) error {
 
 	var signers []signerInfo
 	ext := strings.ToLower(filepath.Ext(path))
+	if verifyDetachedSig != "" {
+		ext = "detached"
+	}
 	switch ext {
+	case "detached":
+		s, err := verifyDetached(verifyDetachedSig, path)
+		if err != nil {
+			return fail(err)
+		}
+		signers = append(signers, s)
 	case ".exe", ".dll", ".sys", ".ocx", ".scr", ".efi", ".cpl", ".drv", ".mun", ".node":
 		sigs, err := authenticode.VerifyPE(f, false)
 		if err != nil {
@@ -135,6 +182,8 @@ func runVerify(cmd *cobra.Command, args []string) error {
 		}
 		if s.Timestamp != nil {
 			fmt.Printf("  Timestamp:  %s by %s\n", s.Timestamp.SigningTime.UTC().Format(time.RFC3339), s.Timestamp.Certificate.Subject.CommonName)
+		} else if !s.SignedAt.IsZero() {
+			fmt.Printf("  Signed at:  %s (signer's clock, not a trusted timestamp)\n", s.SignedAt.UTC().Format(time.RFC3339))
 		} else {
 			fmt.Printf("  Timestamp:  none\n")
 		}
