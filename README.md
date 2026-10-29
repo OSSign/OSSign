@@ -49,7 +49,7 @@ You can use the OSSign CLI to sign files using various methods. Below are some e
 For more configuration examples, see below.
 
 ### Configuration
-The configuration can be provided via a json or yaml file. As a default, the CLI will look for a file named `config.yaml` in ~/.ossign/ or /etc/ossign on Linux/MacOS, and %PROGRAMDATA%\ossign\config.yaml or %USERPROFILE%\.ossign\config.yaml on Windows.
+The configuration can be provided via a json or yaml file. If no `OSSIGN_CONFIG`/`OSSIGN_CONFIG_BASE64` environment variable and no `--config` flag is given, the CLI uses `~/.ossign/config.yaml`, then `~/ossign/config.yaml` (`%USERPROFILE%` on Windows), and finally falls back to `/etc/ossign/config.yaml` on Linux/MacOS or `%PROGRAMDATA%\ossign\config.yaml` on Windows.
 
 ```yaml
 # Currently "azure" (Azure Key Vault), "azureTrusted" (Azure Artifact Signing), "ossignServer" (OSSign Server, keyless) or "certificate" (Local Certificate) are supported

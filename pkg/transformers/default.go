@@ -3,6 +3,7 @@ package transformers
 import (
 	"fmt"
 	"io"
+	"log/slog"
 
 	"github.com/ossign/ossign/pkg/binpatch"
 	"github.com/sassoftware/relic/v8/lib/vfs"
@@ -46,7 +47,7 @@ func ApplyBinPatch(src *vfs.File, dest *vfs.File, result io.Reader) error {
 	srcLen := src.Size()
 	destLen := dest.Size()
 
-	fmt.Println("Applying binary patch from", src.Name(), "to", dest.Name(), "with sizes:", srcLen, destLen)
+	slog.Debug("Applying binary patch", "src", src.Name(), "dest", dest.Name(), "srcSize", srcLen, "destSize", destLen)
 
 	blob, err := io.ReadAll(result)
 	if err != nil {
@@ -58,7 +59,7 @@ func ApplyBinPatch(src *vfs.File, dest *vfs.File, result io.Reader) error {
 	}
 
 	for _, f := range patch.Patches {
-		fmt.Println("Applying patch at ", f.Offset)
+		slog.Debug("Applying patch", "offset", f.Offset, "oldSize", f.OldSize, "newSize", f.NewSize)
 	}
 
 	return patch.Apply(src, dest)

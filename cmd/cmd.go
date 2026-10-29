@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -23,14 +23,11 @@ var cfgFile string
 var GlobalConfig SigningConfig
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(setupLogging, initConfig)
 
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "enable debug logging")
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", filepath.Join(homedir, ".ossign/config.yaml"), "config file (default is ~/ossign/config.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is ~/.ossign/config.yaml, then ~/ossign/config.yaml)")
 
 	// Signing flags
 	rootCmd.Flags().StringVarP((*string)(&GlobalConfig.SignatureType), "sign-type", "t", "", "Type of file to sign (powershell, pecoff, authenticode, dmg, auto)")
@@ -41,14 +38,14 @@ func initConfig() {
 	if os.Getenv("OSSIGN_CONFIG") != "" || os.Getenv("OSSIGN_CONFIG_BASE64") != "" {
 		var config []byte
 		if os.Getenv("OSSIGN_CONFIG_BASE64") != "" {
-			log.Print("Using config from OSSIGN_CONFIG_BASE64 environment variable")
+			slog.Info("Using config from OSSIGN_CONFIG_BASE64 environment variable")
 			configBytes, err := base64.StdEncoding.DecodeString(os.Getenv("OSSIGN_CONFIG_BASE64"))
 			if err != nil {
-				log.Fatalf("Error decoding OSSIGN_CONFIG_BASE64: %v", err)
+				fatal("Error decoding OSSIGN_CONFIG_BASE64", "error", err)
 			}
 			config = configBytes
 		} else {
-			log.Print("Using config from OSSIGN_CONFIG environment variable")
+			slog.Info("Using config from OSSIGN_CONFIG environment variable")
 			config = []byte(os.Getenv("OSSIGN_CONFIG"))
 		}
 
@@ -56,50 +53,60 @@ func initConfig() {
 		if err := json.Unmarshal([]byte(config), &decoded); err == nil {
 			viper.MergeConfigMap(decoded)
 		} else {
-			log.Fatalf("Error parsing OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64: %v", err)
+			fatal("Error parsing OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64", "error", err)
 		}
-
-		log.Println("Using config from OSSIGN_CONFIG environment variable")
 
 		err := viper.Unmarshal(&GlobalConfig)
 		if err != nil {
-			log.Fatal("Unable to decode into struct:", err)
+			fatal("Unable to decode config", "error", err)
 		}
 
 		return
 	}
 
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
+	if cfgFile == "" {
+		cfgFile = defaultConfigFile()
 	}
-
-	abspathHome := filepath.Join(homedir, ".ossign")
-	var programdir string
-
-	// For Windows, use ProgramData
-	if os.Getenv("ProgramData") != "" {
-		programdir = filepath.Join(os.Getenv("ProgramData"), "ossign")
-	} else {
-		programdir = "/etc/ossign"
-	}
-
-	viper.AddConfigPath(abspathHome)
-	viper.AddConfigPath(programdir)
-	viper.SetConfigName("config")
-	viper.SetConfigType("json")
+	slog.Debug("Resolved config file", "path", cfgFile)
 
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
+	} else {
+		// For Windows, use ProgramData
+		programdir := "/etc/ossign"
+		if os.Getenv("ProgramData") != "" {
+			programdir = filepath.Join(os.Getenv("ProgramData"), "ossign")
+		}
+
+		viper.AddConfigPath(programdir)
+		viper.SetConfigName("config")
 	}
 
 	if err := viper.ReadInConfig(); err == nil {
 		err := viper.Unmarshal(&GlobalConfig)
 		if err != nil {
-			log.Fatal("Unable to decode into struct:", err)
+			fatal("Unable to decode config", "error", err)
 		}
-		log.Println("Using config file:", viper.ConfigFileUsed())
+		slog.Info("Using config file", "path", viper.ConfigFileUsed())
 	} else {
-		log.Println("No config file found, proceeding without it")
+		slog.Warn("No config file found, trying to proceed without it", "error", err)
 	}
+}
+
+// defaultConfigFile returns the first existing config file in the user's home
+// directory, checking ~/.ossign/config.yaml before ~/ossign/config.yaml.
+func defaultConfigFile() string {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+
+	for _, file := range []string{".ossign/config.yaml", "ossign/config.yaml", ".ossign/config.yml", "ossign/config.yml"} {
+		path := filepath.Join(homedir, file)
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
+	return ""
 }

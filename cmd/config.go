@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/ossign/ossign/pkg/azure"
@@ -121,7 +120,7 @@ func (c *SigningConfig) GetSigner(timestamper pkcs9.Timestamper, ctx context.Con
 	if c.TokenType == TokenTypeAzure {
 		azconfig, err := azure.NewAzureKey(c.AzureConfig.VaultUrl, c.AzureConfig.TenantId, c.AzureConfig.ClientId, c.AzureConfig.ClientSecret, c.AzureConfig.CertificateName, c.AzureConfig.CertificateVersion, ctx)
 		if err != nil {
-			log.Fatalf("Error creating Azure key: %v", err)
+			fatal("Error creating Azure key", "error", err)
 		}
 
 		signerCert = &certloader.Certificate{
@@ -152,15 +151,15 @@ func (c *SigningConfig) GetSigner(timestamper pkcs9.Timestamper, ctx context.Con
 
 	cert, err := certloader.ParseX509Certificates([]byte(c.CertConfig.Certificate))
 	if err != nil {
-		log.Fatalf("Error parsing certificate: %v", err)
+		fatal("Error parsing certificate", "error", err)
 	}
 	if len(cert) == 0 {
-		log.Fatalf("No certificates found")
+		fatal("No certificates found")
 	}
 
 	key, err := certloader.ParseAnyPrivateKey([]byte(c.CertConfig.PrivateKey), c.CertConfig)
 	if err != nil {
-		log.Fatalf("Error parsing private key: %v", err)
+		fatal("Error parsing private key", "error", err)
 	}
 
 	signerCert = &certloader.Certificate{

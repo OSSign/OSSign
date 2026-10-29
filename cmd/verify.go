@@ -210,7 +210,6 @@ func runVerify(cmd *cobra.Command, args []string) error {
 }
 
 func fail(err error) error {
-	fmt.Fprintf(os.Stderr, "verification failed: %v\n", err)
-	os.Exit(1)
+	fatal("Verification failed", "error", err)
 	return nil
 }

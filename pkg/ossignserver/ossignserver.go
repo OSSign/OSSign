@@ -22,7 +22,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -247,7 +247,7 @@ func (k *Key) ensureToken(ctx context.Context) error {
 		return fmt.Errorf("OSSign Server returned an empty access token")
 	}
 	if resp.TestMode {
-		log.Printf("WARNING: policy is in test mode, signing with a self-signed TEST certificate")
+		slog.Warn("Policy is in test mode, signing with a self-signed TEST certificate")
 	}
 	k.token = &resp
 	return nil

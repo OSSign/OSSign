@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/ossign/ossign/pkg/vfs"
 	"github.com/sassoftware/relic/v8/config"
@@ -14,7 +14,7 @@ import (
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("Error executing command: %v", err)
+		fatal("Error executing command", "error", err)
 	}
 }
 
@@ -42,7 +42,7 @@ func Run(cmd *cobra.Command, args []string) {
 	}
 
 	if GlobalConfig.InputFile == "" {
-		log.Fatal("No input file specified")
+		fatal("No input file specified")
 	}
 
 	// Default is signing in place, which is what the ossign action, the npm
@@ -50,6 +50,10 @@ func Run(cmd *cobra.Command, args []string) {
 	if GlobalConfig.OutputFile == "" {
 		GlobalConfig.OutputFile = GlobalConfig.InputFile
 	}
+
+	slog.Debug("Signing configuration", "input", GlobalConfig.InputFile, "output", GlobalConfig.OutputFile,
+		"signType", GlobalConfig.SignatureType, "tokenType", GlobalConfig.TokenType,
+		"timestampUrl", GlobalConfig.TimestampUrl, "msTimestampUrl", GlobalConfig.MsTimestampUrl)
 
 	ctx := context.Background()
 
@@ -60,36 +64,35 @@ func Run(cmd *cobra.Command, args []string) {
 
 	timestamper, err := tsclient.New(&timestampConfig)
 	if err != nil {
-		log.Fatalf("Error creating timestamper: %v", err)
+		fatal("Error creating timestamper", "error", err)
 	}
 
 	signerCert, err := GlobalConfig.GetSigner(timestamper, ctx)
 	if err != nil {
-		log.Fatalf("Error getting signer: %v", err)
+		fatal("Error getting signer", "error", err)
 	}
 
 	file, err := vfs.ReadFromFile(GlobalConfig.InputFile)
 	if err != nil {
-		log.Fatalf("Error reading input file: %v", err)
+		fatal("Error reading input file", "path", GlobalConfig.InputFile, "error", err)
 	}
+	slog.Debug("Read input file", "path", GlobalConfig.InputFile, "size", file.Size())
 
 	outfileFdesc := rvfs.New([]byte{}, GlobalConfig.OutputFile)
 
 	if GlobalConfig.SignatureType != "" && MapTypeToFunc[GlobalConfig.SignatureType] != nil {
 		err = MapTypeToFunc[GlobalConfig.SignatureType](file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
 	} else {
-		log.Fatalf("No sign type specified or unsupported sign type: %s (auto not implemented yet)", GlobalConfig.SignatureType)
+		fatal("No sign type specified or unsupported sign type (auto not implemented yet)", "signType", GlobalConfig.SignatureType)
 		// err = SignAuto(file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
 	}
 	if err != nil {
-		log.Fatalf("Error signing file: %v", err)
+		fatal("Error signing file", "error", err)
 	}
 
 	if err := vfs.WriteToFile(outfileFdesc); err != nil {
-		log.Fatalf("Error writing output file: %v", err)
+		fatal("Error writing output file", "path", GlobalConfig.OutputFile, "error", err)
 	}
 
-	log.Printf("Successfully signed %s to %s", GlobalConfig.InputFile, GlobalConfig.OutputFile)
-
-	log.Println("Finished signing!")
+	slog.Info("Successfully signed file", "input", GlobalConfig.InputFile, "output", GlobalConfig.OutputFile)
 }

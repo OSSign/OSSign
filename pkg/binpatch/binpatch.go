@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"sort"
 
@@ -142,12 +143,12 @@ func (p *PatchSet) Apply(infile *vfs.File, outfile *vfs.File) error {
 	size := infile.Size()
 
 	if infile.Size() != outfile.Size() {
-		fmt.Println("Input and output file sizes differ, rewriting output file")
+		slog.Debug("Input and output file sizes differ, rewriting output file", "inputSize", infile.Size(), "outputSize", outfile.Size())
 		n, err := outfile.Seek(0, 0)
 		if err != nil {
 			return fmt.Errorf("failed to seek output file: %v", err)
 		}
-		fmt.Println("Seeking output file to", n, "bytes")
+		slog.Debug("Seeked output file", "offset", n)
 
 		err = outfile.Truncate(0)
 		if err != nil {
@@ -158,34 +159,34 @@ func (p *PatchSet) Apply(infile *vfs.File, outfile *vfs.File) error {
 		if err != nil {
 			return fmt.Errorf("failed to seek input file: %v", err)
 		}
-		fmt.Println("Seeking input file to", n, "bytes")
+		slog.Debug("Seeked input file", "offset", n)
 
 		if n, err := io.Copy(outfile, infile); err != nil {
 			return fmt.Errorf("failed to copy input file to output file: %v", err)
 		} else {
-			fmt.Println("Copied", n, "bytes from input file to output file")
+			slog.Debug("Copied input file to output file", "bytes", n)
 		}
 
 		n, err = outfile.Seek(0, 0)
 		if err != nil {
 			return fmt.Errorf("failed to seek output file after copy: %v", err)
 		}
-		fmt.Println("Seeking output file to", n, "bytes after copy")
+		slog.Debug("Seeked output file after copy", "offset", n)
 
-		fmt.Println("Copied input file to output file, now applying patches. Sizes after copy:", infile.Size(), outfile.Size())
+		slog.Debug("Applying patches", "inputSize", infile.Size(), "outputSize", outfile.Size())
 	}
 
 	for i, patch := range p.Patches {
 		if patch.OldSize == patch.NewSize {
 			continue
 		} else if i != len(p.Patches)-1 {
-			fmt.Println("Patch at", patch.Offset, "has old size", patch.OldSize, "and new size", patch.NewSize, "but is not the last patch. Rewriting output file.")
+			slog.Debug("Size-changing patch is not the last patch, rewriting output file", "offset", patch.Offset, "oldSize", patch.OldSize, "newSize", patch.NewSize)
 			return p.applyRewrite(infile, outfile)
 		}
 
 		oldEnd := patch.Offset + int64(patch.OldSize)
 		if oldEnd != size {
-			fmt.Println("Last patch at", patch.Offset, "has old size", patch.OldSize, "and new size", patch.NewSize, "but does not match end of input file. Rewriting output file.")
+			slog.Debug("Last patch does not end at end of input file, rewriting output file", "offset", patch.Offset, "oldSize", patch.OldSize, "newSize", patch.NewSize)
 			return p.applyRewrite(infile, outfile)
 		}
 
