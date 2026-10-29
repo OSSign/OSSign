@@ -33902,6 +33902,18 @@ async function InstallOssign() {
     coreExports.info(`ossign installed at ${binaryPath}`);
     return binaryPath;
 }
+function getDefaultConfigPath() {
+    const platform = process.platform;
+    let configPath = "";
+    if (platform === "win32") {
+        configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
+    }
+    else {
+        configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
+        coreExports.info(`Writing config to ${configPath}...`);
+    }
+    return configPath;
+}
 
 const balanced = (a, b, str) => {
     const ma = a instanceof RegExp ? maybeMatch(a, str) : a;
@@ -41803,16 +41815,12 @@ async function InstallConfig(config) {
         return "";
     }
     const platform = process.platform;
-    let configPath = "";
+    let configPath = getDefaultConfigPath();
     if (platform === "win32") {
-        configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
-        coreExports.info(`Writing config to ${configPath}...`);
         await fs.mkdir(`${process.env["USERPROFILE"]}\\ossign`, { recursive: true });
         await fs.writeFile(configPath, config);
     }
     else {
-        configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
-        coreExports.info(`Writing config to ${configPath}...`);
         await fs.mkdir(`${process.env["HOME"]}/.ossign`, { recursive: true });
         await fs.writeFile(configPath, config);
     }
@@ -41838,6 +41846,22 @@ async function run() {
     if (config && config.trim() !== "" && installOnly) {
         coreExports.info("Using provided ossign config");
         configPath = await InstallConfig(config);
+    }
+    else if ((!config || config.trim() !== "")) {
+        configPath = getDefaultConfigPath();
+        try {
+            const configContent = await fs.readFile(configPath, "utf-8");
+            if (!configContent || configContent.trim() === "") {
+                coreExports.warning(`Config file at ${configPath} is empty`);
+            }
+            else {
+                coreExports.info(`Using existing config file at ${configPath}`);
+                config = configContent;
+            }
+        }
+        catch (err) {
+            coreExports.warning(`Failed to read config file at ${configPath}: ${err}`);
+        }
     }
     const binaryPath = await InstallOssign();
     coreExports.info("OSSign Binary has been successfully installed");

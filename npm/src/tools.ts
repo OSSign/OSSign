@@ -68,7 +68,6 @@ export function getDefaultConfigPath(): string {
         configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
     } else {
         configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
-        core.info(`Writing config to ${configPath}...`);
     }
 
     return configPath;

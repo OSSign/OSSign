@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import { InstallOssign } from "./tool.ts";
+import { getDefaultConfigPath, InstallOssign } from "./tool.ts";
 import * as fs from "fs/promises";
 import * as exec from "@actions/exec";
 //import * as glob from "@actions/glob";
@@ -36,16 +36,12 @@ async function InstallConfig(config: string) : Promise<string> {
 
     const platform = process.platform;
 
-    let configPath = "";
+    let configPath = getDefaultConfigPath();
 
     if (platform === "win32") {
-        configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
-        core.info(`Writing config to ${configPath}...`);
         await fs.mkdir(`${process.env["USERPROFILE"]}\\ossign`, { recursive: true });
         await fs.writeFile(configPath, config);
     } else {
-        configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
-        core.info(`Writing config to ${configPath}...`);
         await fs.mkdir(`${process.env["HOME"]}/.ossign`, { recursive: true });
         await fs.writeFile(configPath, config);
     }
@@ -78,6 +74,19 @@ export async function run() {
     if (config && config.trim() !== "" && installOnly) {
         core.info("Using provided ossign config");
         configPath = await InstallConfig(config);
+    } else if ((!config || config.trim() !== "")) {
+        configPath = getDefaultConfigPath();
+        try {
+            const configContent = await fs.readFile(configPath, "utf-8");
+            if (!configContent || configContent.trim() === "") {
+                core.warning(`Config file at ${configPath} is empty`);
+            } else {
+                core.info(`Using existing config file at ${configPath}`);
+                config = configContent;
+            }
+        } catch (err) {
+            core.warning(`Failed to read config file at ${configPath}: ${err}`);
+        }
     }
 
     const binaryPath = await InstallOssign();

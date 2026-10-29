@@ -105,3 +105,18 @@ export async function InstallOssign() : Promise<string> {
     
     return binaryPath;
 }
+
+export function getDefaultConfigPath(): string {
+    const platform = process.platform;
+
+    let configPath = "";
+
+    if (platform === "win32") {
+        configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
+    } else {
+        configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
+        core.info(`Writing config to ${configPath}...`);
+    }
+
+    return configPath;
+}
