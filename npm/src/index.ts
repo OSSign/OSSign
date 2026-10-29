@@ -1,6 +1,6 @@
 import { Exec, SigningParameters } from './exec';
 import { DownloadBinary, DownloadBinarySync, ossignInPath } from './download';
-import { logger } from './tools';
+import { getDefaultConfigPath, logger } from './tools';
 import execSync from 'child_process';
 
 async function Sign(file: string, outFile: string = "", type: string = "pecoff", configPath: string = "" ) {
@@ -37,7 +37,7 @@ async function Sign(file: string, outFile: string = "", type: string = "pecoff",
     if (configPath) {
         params.configFile = configPath;
     } else if (process.env.OSSIGN_CONFIG === undefined && process.env.OSSIGN_CONFIG_BASE64 === undefined) {
-        throw new Error('Either configPath or OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64 environment variable must be provided');
+        params.configFile = getDefaultConfigPath();
     }
 
     params.binaryPath = toolPath;
@@ -91,7 +91,7 @@ function SignSync(file: string, outFile: string = "", type: string = "pecoff", c
     if (configPath) {
         params.configFile = configPath;
     } else if (process.env.OSSIGN_CONFIG === undefined && process.env.OSSIGN_CONFIG_BASE64 === undefined) {
-        throw new Error('Either configPath or OSSIGN_CONFIG/OSSIGN_CONFIG_BASE64 environment variable must be provided');
+        params.configFile = getDefaultConfigPath();
     }
 
     params.binaryPath = toolPath;

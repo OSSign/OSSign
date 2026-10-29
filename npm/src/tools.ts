@@ -58,3 +58,18 @@ export function getToolUrl(version: string = "latest"): string {
 
     return "https://github.com/ossign/ossign/releases/download/" + version + "/" + toolName;
 }
+
+export function getDefaultConfigPath(): string {
+    const platform = process.platform;
+
+    let configPath = "";
+
+    if (platform === "win32") {
+        configPath = `${process.env["USERPROFILE"]}\\ossign\\config.yaml`;
+    } else {
+        configPath = `${process.env["HOME"]}/.ossign/config.yaml`;
+        core.info(`Writing config to ${configPath}...`);
+    }
+
+    return configPath;
+}
