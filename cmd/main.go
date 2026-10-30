@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log/slog"
+	"path/filepath"
+	"strings"
 
 	"github.com/ossign/ossign/pkg/vfs"
 	"github.com/sassoftware/relic/v8/config"
@@ -26,6 +28,21 @@ var MapTypeToFunc = map[SignatureType]func(*rvfs.File, *certloader.Certificate, 
 	"appmanifest": SignAppmanifest,
 	"dmg":         SignDmg,
 	"machos":      SignMachos,
+}
+
+// Map all file endings to their corresponding signing functions
+var MapFileEnding = map[string]func(*rvfs.File, *certloader.Certificate, string, *rvfs.File, context.Context) error{
+	"ps1":  SignPowershell,
+	"psm1": SignPowershell,
+	"msi":  SignMsi,
+	"msp":  SignMsi,
+	"mst":  SignMsi,
+	"appx": SignAppx,
+	"msix": SignAppx,
+	"dmg":  SignDmg,
+	"pkg":  SignDmg,
+	"exe":  SignPecoff,
+	"dll":  SignPecoff,
 }
 
 func Run(cmd *cobra.Command, args []string) {
@@ -83,8 +100,14 @@ func Run(cmd *cobra.Command, args []string) {
 	if GlobalConfig.SignatureType != "" && MapTypeToFunc[GlobalConfig.SignatureType] != nil {
 		err = MapTypeToFunc[GlobalConfig.SignatureType](file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
 	} else {
-		fatal("No sign type specified or unsupported sign type (auto not implemented yet)", "signType", GlobalConfig.SignatureType)
-		// err = SignAuto(file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
+		// Fetch the file ending and try to determine the filetype
+		ext := strings.ToLower(filepath.Ext(GlobalConfig.InputFile))
+		if MapFileEnding[ext] == nil {
+			// Default to pecoff
+			ext = "exe"
+		}
+
+		err = MapFileEnding[ext](file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
 	}
 	if err != nil {
 		fatal("Error signing file", "error", err)
