@@ -101,7 +101,7 @@ func Run(cmd *cobra.Command, args []string) {
 		err = MapTypeToFunc[GlobalConfig.SignatureType](file, signerCert, GlobalConfig.InputFile, outfileFdesc, ctx)
 	} else {
 		// Fetch the file ending and try to determine the filetype
-		ext := strings.ToLower(filepath.Ext(GlobalConfig.InputFile))
+		ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(GlobalConfig.InputFile), "."))
 		if MapFileEnding[ext] == nil {
 			// Default to pecoff
 			ext = "exe"
